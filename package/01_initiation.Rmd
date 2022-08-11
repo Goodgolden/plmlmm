@@ -1,0 +1,199 @@
+---
+title: "01_initiator"
+author: "randy"
+date: "2022-07-21"
+output: html_document
+---
+
+## prepare
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# install.packages(c("devtools", 
+#                    "roxygen2", 
+#                    "testthat", 
+#                    "usethis", 
+#                    "knitr"))
+
+library(tidyverse)
+library(testthat)
+library(usethis)
+library(devtools)
+
+load_all()
+library(plmlmm)
+
+?testthat::test_file
+?devtools::test
+path <- testthat_example("success")
+test_file(path)
+test_file(path, reporter = "minimal")
+```
+
+## initiation
+
+```{r}
+packageVersion("devtools")
+## to create a package
+create_package("~/Desktop/project/plmlmm")
+use_mit_license()
+
+## look for R home directory
+R.home()
+## look for R code base
+system.file()
+## look at the files in the same directory
+here::here() %>%
+  list.files()
+# list.dirs()
+# here::here() %>%
+#   list.dirs(full.names = FALSE,
+#             recursive = TRUE)
+```
+
+
+## use_git
+
+```{r}
+## use git and github for the package
+use_git()
+usethis::use_git_remote("origin", 
+                        url = NULL, 
+                        overwrite = TRUE)
+```
+
+
+
+## use package
+
+```{r}
+use_package("brokenstick", type = "Depends")
+use_package("broom.mixed", type = "Depends")
+
+use_package("dplyr", type = "Depends")
+
+use_package("forcats", type = "Depends")
+
+use_package("gamlss", type = "Depends")
+
+use_package("here", type = "Depends")
+
+use_package("janitor", type = "Depends")
+use_package("JMbayes", type = "Depends")
+
+use_package("lme4", type = "Depends")
+
+use_package("matrixcalc", type = "Depends")
+use_package("MASS", type = "Depends")
+
+use_package("nlme", type = "Depends")
+
+use_package("tidyverse", type = "Depends")
+use_package("tidyr", type = "Depends")
+use_package("tibble", type = "Depends")
+
+use_package("purrr")
+
+use_package("readr")
+use_package("rjags")
+
+use_package("stringr")
+use_package("splines")
+```
+
+
+## use_r & use_test
+
+```{r}
+use_r("00_utils")
+use_r("01_plm")
+use_r("02_lmm")
+use_r("03_simulation")
+use_r("04_test")
+
+use_test("01_plm")
+use_test("02_lmm")
+use_test("03_simulation")
+```
+
+
+## environment
+
+```{r}
+load_all()
+exists("plm",
+       # where = globalenv(), 
+       inherits = FALSE)
+#> [1] FALSE
+
+# ?exists Environment Access
+env <- environment(plm)
+exists("plm", 
+       where = env,
+       # where = globalenv(), 
+       inherits = FALSE)
+```
+
+
+## documents
+
+Use `Ctrl + .` in RStudio and start typing 'DESCRIPTION' to activate a helper that makes it easy to open a file for editing. 
+
+In addition to a filename, your hint can be a function name. 
+
+```{r}
+## document the description
+document()
+## always check 
+## it's good to establish the habit of checking this often.
+check()
+```
+
+
+```{r}
+load_all()
+
+## `covr` package to track 
+## what proportion of your package’s source code
+## is exercised by the tests.
+# install.packages("covr")
+library("covr")
+report()
+test()
+```
+
+**Cmd + Shift + T (macOS)** for test
+
+## readme
+
+```{r}
+## add description files to the package
+usethis::use_tidy_description()
+
+
+## add datasets to the package
+usethis::use_data(test, test_baseline,
+                  all, simulation_100,
+                  train, train_baseline,
+                  demog, epic,
+                  internal = TRUE,
+                  overwrite = TRUE)
+
+## build up a readme file and push into github
+use_readme_rmd()
+build_readme()
+
+usethis::use_roxygen_md()
+```
+
+
+Here is a typical sequence of calls when using devtools for package development:
+
+- Edit one or more files below R/.
+- document() (if you’ve made any changes that impact help files or  NAMESPACE)
+- load_all()
+- Run some examples interactively.
+- test() (or test_file())
+- check()
+

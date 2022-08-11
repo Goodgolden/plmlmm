@@ -1,0 +1,210 @@
+---
+title: "03_people_like_me"
+author: "Randy"
+format: 
+  html: 
+    code-fold: true
+    code-tools: true
+    code-link: true
+    df-print: paged
+editor: visual
+# theme:
+#   light: cosmo
+#   dark: [cosmo, theme-dark.scss]
+toc: true
+---
+
+## People like me methods
+
+-   Brokenstick model with prediction
+-   Multivariate linear model at interested time points
+-   Matching up with target and training datasets, for a subset
+-   GAMLSS model with subset dataset
+
+## Running Code
+
+```{r}
+#| label: load packages
+#| echo: true
+
+devtools::load_all(quiet = TRUE)
+
+# detectCores()
+# library(furrr, quietly = TRUE)
+# plan("multisession", workers = 3)
+```
+
+You can add options to executable code like this
+
+First, fitting a brokenstick model with all the subjects in the training dataset. with outcome as heights.
+
+```{r}
+#| label: people like me (brokenstick model)
+#| echo: true
+
+bks_pred <- 
+  brokenstick_prediction(
+    outcome = "ht",
+    time = "time",
+    id = "id",
+    dataset = train,
+    knots = c(5, 10, 12),
+    pred_time = c(2, 4, 6, 8, 10, 12),
+    choice = "predicted")
+```
+
+Secondly, fitting the multivariate linear mixed model with brokenstick model predicted values.
+
+```{r}
+#| label: people like me (multivariate linear model)
+#| echo: true
+lb_data <- 
+  linear_brokenstick(
+    lm_formula = "`.pred` ~ time * sex + baseline",
+    bks_pred = bks_pred)
+```
+
+Finally, matching up the target with the most similar training subjects and fitting a gamlss model.
+
+```{r}
+#| label: people like me (individual results)
+#| echo: true
+#| results: "hide"
+#| message: false
+
+## mahalanobis p value matching
+pm_mhl_p09_107387 <-
+  pred_matching(
+    lb_data = lb_data,
+    obs_data = train,
+    match_methods = "mahalanobis",
+    match_alpha = 0.95,
+    gamlss_formula = "ht ~ cs(time, df = 3)",
+    gamsigma_formula = "~ cs(time, df = 1)",
+    match_plot = TRUE,
+    predict_plot = TRUE,
+    sbj = 107387)
+
+## mahalanobis fixed matching number
+pm_mhl_n10_107387 <- 
+  pred_matching(
+    lb_data = lb_data,
+    obs_data = train,
+    match_methods = "mahalanobis",
+    match_num = 10,
+    gamlss_formula = "ht ~ cs(time, df = 3)",
+    gamsigma_formula = "~ cs(time, df = 1)",
+    match_plot = TRUE,
+    predict_plot = TRUE,
+    sbj = 107387)
+
+## euclidean fixed matching number
+pm_eld_n10_107387 <- 
+  pred_matching(
+    lb_data = lb_data,
+    obs_data = train,
+    match_methods = "euclidean",
+    match_num = 10,
+    gamlss_formula = "ht ~ cs(time, df = 3)",
+    gamsigma_formula = "~ cs(time, df = 1)",
+    match_plot = TRUE,
+    predict_plot = TRUE,
+    sbj = 107387)
+
+## single time point matching number
+pm_sgl10_n10_107387 <-
+  pred_matching(
+    lb_data = lb_data,
+    obs_data = train,
+    match_methods = "single",
+    match_num = 10,
+    match_time = 10,
+    match_alpha = NULL,
+    gamlss_formula = "ht ~ cs(time, df = 3)",
+    gamsigma_formula = "~ cs(time, df = 1)",
+    match_plot = TRUE,
+    predict_plot = TRUE,
+    sbj = 107387)
+```
+
+## Results
+
+```{r}
+#| label: indiviudal-107387
+head(pm_mhl_p09_107387$centiles_observed)
+head(pm_mhl_p09_107387$centiles_predicted)
+
+rbind("mahalanobis_p" = colMeans(pm_mhl_n10_107387$centiles_observed[, -1: -9]) %>% round(2),
+           "euclidean_n" = colMeans(pm_eld_n10_107387$centiles_observed[, -1: -9]) %>% round(2),
+           "mahalanobis_n" = colMeans(pm_mhl_p09_107387$centiles_observed[, -1: -9]) %>% round(2),
+           "singletime_n" = colMeans(pm_sgl10_n10_107387$centiles_observed[, -1: -9]) %>% round(2)) %>%
+  as.data.frame()
+```
+
+The plots in @fig-id107387-plot show the results for mahalanobis distance outcomes with euclidean distance outcomes, for given individual `ID107387`. In @fig-id107387-plot-1 the trajectories for matching with euclidean distance while in @fig-id107387-plot-2 the trajectories matching with mahalanobis distance. In @fig-id107387-plot-3 the trajectories for matching with euclidean distance while in @fig-id107387-plot-4 the trajectories matching with mahalanobis distance.
+
+```{r}
+#| echo: true
+#| label: fig-id107387-plot
+#| warning: false
+#| fig-cap: "The matching group and plm centiles for individual 107387"
+#| fig-subcap:
+#|   - "matching group for euclidean distance"
+#|   - "matching group for mahalanobis distance"
+#|   - "confidence interval for euclidean distance"
+#|   - "confidence interval for mahalanobis distance"
+#| layout-ncol: 2
+#| layout-row: 2
+#| column: page
+
+
+pm_eld_n10_107387$matching_trajectory
+pm_mhl_p09_107387$matching_trajectory
+pm_eld_n10_107387$predictive_centiles
+pm_mhl_p09_107387$predictive_centiles
+```
+
+## Parallel processing
+
+```{r}
+#| label: parallel processing 
+#| results: "hide"
+#| warning: false
+
+id_all_10 <- unique(train$id) %>% head(20)
+
+# bks_pred <- 
+#   brokenstick_prediction(
+#     outcome = "ht",
+#     time = "time",
+#     id = "id",
+#     dataset = train,
+#     knots = c(5, 10, 12),
+#     pred_time = c(2, 4, 6, 8, 10, 12, 14, 16),
+#     choice = "predicted")
+# 
+# lb_data <- 
+#   linear_brokenstick(
+#     lm_formula = "`.pred` ~ time * sex + baseline",
+#     bks_pred = bks_pred)
+
+library(tictoc)
+
+tic()
+eld_p09_ss10 <- 
+  map(id_all_10, 
+      ~plmlmm:::pred_matching(
+        lb_data = lb_data,
+        obs_data = train,
+        match_methods = "euclidean",
+        match_num = 10,
+        gamlss_formula = "ht ~ cs(time, df = 3)",
+        gamsigma_formula = "~ cs(time, df = 1)",
+        match_plot = TRUE,
+        predict_plot = TRUE,
+        sbj = .))
+toc()
+
+## SS10 2.652 sec elapsed
+## SS100 31.33 sec elapsed
+```
