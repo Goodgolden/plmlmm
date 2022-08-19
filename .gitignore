@@ -3,3 +3,8 @@
 .Rdata
 .httr-oauth
 .DS_Store
+data/
+.png
+.rda
+html/
+*_files

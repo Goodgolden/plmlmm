@@ -20,6 +20,8 @@ Depends:
     matrixcalc,
     nlme,
     R (>= 2.10),
+    shiny,
+    splines,
     tibble,
     tidyr,
     tidyverse
@@ -27,7 +29,6 @@ Imports:
     purrr,
     readr,
     rjags,
-    splines,
     stringr
 Suggests: 
     testthat (>= 3.0.0)

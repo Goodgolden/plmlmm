@@ -96,10 +96,11 @@ use_package("tibble", type = "Depends")
 use_package("purrr")
 
 use_package("readr")
-use_package("rjags")
+use_package("rjags", type = "Depends")
 
 use_package("stringr")
-use_package("splines")
+use_package("splines", type = "Depends")
+use_package("shiny", type = "Depends")
 ```
 
 
@@ -174,7 +175,7 @@ usethis::use_tidy_description()
 
 ## add datasets to the package
 usethis::use_data(test, test_baseline,
-                  all, simulation_100,
+                  all, margin_mean,
                   train, train_baseline,
                   demog, epic,
                   internal = TRUE,
@@ -196,4 +197,11 @@ Here is a typical sequence of calls when using devtools for package development:
 - Run some examples interactively.
 - test() (or test_file())
 - check()
+
+
+
+```{r}
+devtools::load_all()
+plmlmm::run_shiny()
+```
 

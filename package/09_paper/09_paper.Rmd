@@ -1,0 +1,233 @@
+---
+title: A template for the *arxiv* style
+authors:
+  - name: Randy
+    thanks: Use footnote for providing further information about author 
+    department: Department of Biostatistics and Bioinformatics
+    affiliation: University of Colorado
+    location: Aurora, CO, USA
+    email: "xin.2.jin@cuanschutz.edu"
+
+abstract: |
+  Predictive mean matching is an easy-to-use and versatile method.
+  The model is implicit (Little and Rubin 2002), which means that there is no need to define an explicit model for the distribution of the missing values. Because of this, predictive mean matching is less vulnerable
+   In contrast, the imputations created by predictive mean matching follow the data quite nicely, even though the predictive mean itself is clearly off-target for some of the ages. 
+   
+   This example shows that predictive mean matching is robust against misspecification, where the normal model is not.
+  Predictive mean matching is an example of a hot deck method, where values are imputed using values from the complete cases matched with respect to some metric. 
+  
+  Curve matching[3] is a nearest neighbour technique for individual prediction that constructs a prediction by aggregating the histories of “people-like-me”. 
+  
+  
+  There are different strategies for defining the set and number of candidate donors.
+   Predictive mean matching performs very badly when \(d\) is small and there are lots of ties for the predictors among the individuals to be imputed.
+   
+   
+   The reason is that the tied individuals all get the same imputed value in each imputed dataset when \(d = 1\) (Ian White, personal communication). Setting \(d\) to a high value (say \(n/10\)) alleviates the duplication problem, but may introduce bias since the likelihood of bad matches increases.
+   
+   
+   Schenker and Taylor (1996), evaluated \(d = 3\), \(d = 10\) and an adaptive scheme. The adaptive method was slightly better than using a fixed number of candidates, but the differences were small. compared various settings for \(d\), and found that \(d = 5\) and \(d = 10\) generally provided the best results.
+  
+keywords:
+  - predictive mean matching
+  - personalized data-driven prediction
+  - multiple imputation
+  - Mahalanobis distance
+  - people-like-me
+bibliography: references.bib
+biblio-style: unsrt
+output: rticles::arxiv_article
+---
+
+# Introduction
+
+The GAMLSS method (Rigby and Stasinopoulos, 2005; Stasinopoulos et al., 2017) extends both the generalized linear model and the generalized additive model. A unique feature of GAMLSS is its ability to specify a (pos- sibly nonlinear) model for each of the parameters of the distribution, thus giving rise to an extremely flexible toolbox that can be used to model almost any distribution. The gamlss package contains over 60 built-in distributions. Each distribution comes with a function to draw random variates, so once the gamlss model is fitted, it can also be used to draw imputations. 
+
+
+
+Various metrics are possible to define the distance between the cases. The predictive mean matching metric was proposed by Rubin (1986) and Little (1988). This metric is particularly useful for missing data applications because it is optimized for each target variable separately.
+
+The predicted value only needs to be a convenient one-number summary of the important information that relates the covariates to the target. Calculation is straightforward, and it is easy to include nominal and ordinal variables.
+
+AndridgeandLittle(2010)distinguish four methods:
+1. Choose a threshold η, and take all i for which |yˆi − yˆj | < η as candidate donors for imputing j. Randomly sample one donor from the candidates, and take its yi as replacement value.
+2. Take the closest candidate, i.e., the case i for which |yˆi −yˆj | is minimal as the donor. This is known as “nearest neighbor hot deck,” “deterministic hot deck” or “closest predictor.”
+3. Find the d candidates for which |yˆi − yˆj | is minimal, and sample one of them. Usual values for d are 3, 5 and 10. There is also an adaptive method to specify the number of donors (Schenker and Taylor, 1996).
+4. Sample one donor with a probability that depends on |yˆi − yˆj | (Siddique and Belin, 2008).
+
+
+
+There are different strategies for defining the set and number of candidate donors. Setting d = 1 is generally considered to be too low, as it may reselect the same donor over and over again. Predictive mean matching performs very badly when d is small and there are lots of ties for the predictors among the individuals to be imputed. The reason is that the tied individuals all get the same imputed value in each imputed dataset when d = 1 (Ian White, personal communication). Setting d to a high value (say n/10) alleviates the duplication problem, but may introduce bias since the likelihood of bad matches increases.
+
+Schenker and Taylor (1996) evaluated d = 3, d = 10
+Morris et al. (2014) compared various
+Kleinke (2017) found that d = 5 may be too high for sample size lower than n = 100, and suggested setting d = 1 for better point estimates for small samples. Gaffert et al. (2016) explored scenarios in which candidate donors have different probabilities to be drawn, where the probability depends on the distance between the donor and recipient cases. 
+
+
+Instead a closeness parameter needs to be specified, and this was made adaptive to the data. An advantage of using all donors is that the variance of the imputations can be corrected by the Parzen correction, which alleviates concerns about insuffi- cient variability of the imputes. Their simulations showed that with a small sample (n = 10), the adaptive method is clearly superior to methods with a fixed donor pool.
+
+
+an adaptive method for setting d could improve small sample behavior. Meanwhile, the number of donors can be changed through the donors argument.
+
+
+
+Table 3.3 repeats the simulation experiment done in Tables 3.1 and 3.2 for predictive mean matching for three different choices of the number d of candidate donors. Results are given for n = 50 and n = 1000. For n = 50 we find that β1 is increasingly biased towards the null for larger d. Because of the bias, the coverage is lower than nominal. For missing x the bias is much smaller. Setting d to a lower value, as recommended by Kleinke (2017), improves point estimates, but the magnitude of the effect depends on whether the missing values occur in x or y. For the sample size n = 1000 predictive mean matching appears well calibrated for d = 5 for missing data in y, and has slight undercoverage for missing data in x. Note that Table 3.3 in the first edition of this book presented incorrect information because it had erroneously imputed the data by norm instead of pmm.
+
+
+
+
+The traditional method does not work for a small number of predictors. Heitjan and Little (1991) report that for just two predictors the results were “disastrous.” The cause of the problem appears to be related to their use
+
+
+The method is robust against misspecification of the imputation model, yet performs as well as theoretically superior methods. In the context of missing covariate data, Marshall et al. (2010a) concluded that predictive mean matching “produced the least biased estimates and better model per- formance measures.” 
+
+
+The method works best with large samples, and provides imputations that possess many characteristics of the complete data. Predictive mean matching cannot be used to extrapolate beyond the range of the data, or to interpolate within the range of the data if the data at the interior are sparse. Also, it may not perform well with small datasets. Bearing these points in mind, predictive mean matching is a great all-around method with exceptional properties.
+
+
+there are two reasons to move beyond the predictive distance used in PMM and investigate an alternative metric. Firstly, PMM requires users of curve matching to select a particular future time point to base the matches on (e.g. 14 months of age). In some cases, it may be difficult to choose this time point, especially when the ‘future’ is more vaguely defined as a time interval.[4] Secondly, the predictive distance may make the matches look unconvincing. The trajectories of the selected donors may all be close to the prediction for the target child at 14 months, but this does not imply that the histories are identical. After all, different profiles may lead to the same predicted value.
+
+
+
+Consequently, the curves of some of the matches may be quite far from the curve of the target child. Some users of curve matching feel that such discrepancies are undesirable, as these matches do not appear to be people-like-me.[4] 
+It is useful to investigate these shortcomings not only for improving growth prediction but also for other applications of multiple imputation, such as patient recovery after an operation, prediction of longevity, and decision-making when more than one treatment is available. [3]
+
+
+# methods 
+
+Therefore, the information of these children at a later age is available. The first step is to fit a linear regression model on the donor database. Then, this model is used to predict the values for all donors and for the target at a certain point in the future, for example at 14 months. Finally, the distance between the predicted value of each of the donors and the predicted value of the target is calculated, which is referred to as the predictive distance. A number of donors – usually five - with the smallest predictive distance are selected as the best matches. Their growth curves are then plotted and point estimates can be calculated by averaging the measurements. The growth patterns of the matched children thus suggest how the target child might develop in the future.
+
+
+the practical implementation and use of curve matching can in theory be improved by combining the predictive distance with another distance measure, thus creating a “blended distance” measure. Such a blended metric would take into account historical similarity between the donors and the target. For example, when blending the predictive distance with the Mahalanobis distance, more weight is given to similarities between units in the full predictor space. This would theoretically lead to the selection of donors with profiles more similar to the target, and therefore to the selection of true people-like-me. The objective of this study is to implement such a blended distance measure and to investigate its properties, blend ratio, and the validity of its resulting inferences.
+
+
+So instead of using one predictive distance at particular future time point. we use multiple time;
+The PD is the distance between the predicted value of a donor and the predicted value of the target at a particular future time point. 
+The MD is defined as the distance between two N dimensional points scaled by the variation in each component of the point.
+
+# Headings: first level
+\label{sec:headings}
+
+You can use directly LaTeX command or Markdown text. 
+
+LaTeX command can be used to reference other section. See Section \ref{sec:headings}.
+However, you can also use **bookdown** extensions mechanism for this.
+
+## Headings: second level
+
+You can use equation in blocks
+
+$$
+\xi _{ij}(t)=P(x_{t}=i,x_{t+1}=j|y,v,w;\theta)= {\frac {\alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}{\sum _{i=1}^{N} \sum _{j=1}^{N} \alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}}
+$$
+
+But also inline i.e $z=x+y$
+
+### Headings: third level
+
+as the profiles of the matched donors can substantially differ from the profile of the target. 
+similarity between the curves of the donors and the target can be taken into account by combining the predictive distance with the Mahalanobis distance.
+
+. The results show that blending towards the Mahalanobis distance leads to worse performance in terms of bias, coverage, and predictive power. Simulation study II evaluates the blended metric in a setting where a single value is imputed. The results show that a property of blending is the bias-variance trade off. Giving more weight to the Mahalanobis distance leads to less variance in the imputations, but less accuracy as well.
+
+
+We used the following steps to train and test both PLM and LMM prediction approaches: (1) build the approach using the training data, (2) examine prediction performance and tune the approach using the training data (i.e., within-sample testing), and (3) test the accuracy and precision of each approach using the testing data (i.e., out-of-sample testing). We compared performance of PLM and LMM predictions in terms of accuracy and precision across all individuals and all timepoints.
+
+
+ We applied a form of predictive mean matching to determine the relative weights for each matching variable using the following steps.28 First, we imputed a 365- day TUG value for each patient in the training dataset via the brokenstick package in R (because data were collected at irregular timepoints).29 Next, we created a linear model to estimate the imputed 365-day TUG value using our matching variables of interest 
+We then used this linear model to estimate the 365-day TUG value for (a) each patient in the training dataset and (b) the index patient. Finally, the patients from the training dataset with the closest predicted 365-day TUG value to the index patient were selected as matches; we used 35 patient matches based on our previous work.12
+
+
+We modeled the observed TUG data from the matching patient records to form the index patient’s predicted TUG recovery trajectory. We used Generalized Additive Models for Location, Scale, and Shape (GAMLSS) to flexibly model the median, variance, and skewness of TUG recovery from postoperative days 1-425.30 The GAMLSS model included a cubic spline smoother with 3 degrees of freedom for the location parameter and 1 degree of freedom for the shape parameter.
+
+
+# Examples of citations, figures, tables, references
+\label{sec:others}
+
+You can insert references. Here is some text [@kour2014real; @kour2014fast] and see @hadash2018estimate.
+
+The documentation for \verb+natbib+ may be found at
+
+You can use custom blocks with LaTeX support from **rmarkdown** to create environment.
+
+::: {.center latex=true}
+  <http://mirrors.ctan.org/macros/latex/contrib/natbib/natnotes.pdf}>
+:::
+
+Of note is the command \verb+\citet+, which produces citations
+appropriate for use in inline text.  
+
+You can insert LaTeX environment directly too.
+
+\begin{verbatim}
+   \citet{hasselmo} investigated\dots
+\end{verbatim}
+
+produces
+
+\begin{quote}
+  Hasselmo, et al.\ (1995) investigated\dots
+\end{quote}
+
+\begin{center}
+  \url{https://www.ctan.org/pkg/booktabs}
+\end{center}
+
+
+## Figures
+
+You can insert figure using LaTeX directly. 
+
+See Figure \ref{fig:fig1}. Here is how you add footnotes. [^Sample of the first footnote.]
+
+\begin{figure}
+  \centering
+  \fbox{\rule[-.5cm]{4cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
+  \caption{Sample figure caption.}
+  \label{fig:fig1}
+\end{figure}
+
+But you can also do that using R.
+
+```{r fig2, fig.cap = "Another sample figure"}
+plot(mtcars$mpg)
+```
+
+You can use **bookdown** to allow references for Tables and Figures.
+
+
+## Tables
+
+Below we can see how to use tables. 
+
+See awesome Table~\ref{tab:table} which is written directly in LaTeX in source Rmd file.
+
+\begin{table}
+ \caption{Sample table title}
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    \multicolumn{2}{c}{Part}                   \\
+    \cmidrule(r){1-2}
+    Name     & Description     & Size ($\mu$m) \\
+    \midrule
+    Dendrite & Input terminal  & $\sim$100     \\
+    Axon     & Output terminal & $\sim$10      \\
+    Soma     & Cell body       & up to $10^6$  \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:table}
+\end{table}
+
+You can also use R code for that.
+
+```{r}
+knitr::kable(head(mtcars), caption = "Head of mtcars table")
+```
+
+
+## Lists
+
+- Item 1
+- Item 2 
+- Item 3

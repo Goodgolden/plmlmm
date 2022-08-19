@@ -1,0 +1,172 @@
+
+
+# Run R scripts on OSG
+
+### Access R on the submit host
+
+
+- This is my profile login codes
+
+```
+ssh goodgolden_555@login05.osgconnect.net
+
+```
+
+```{r}
+getwd()
+```
+
+- to create a working directory, you can either: 
+
+```
+$ tutorial R 
+```
+
+OR 
+
+```
+$ mkdir tutorial-R; cd tutorial-R
+```
+
+- to test R is run using containers on the OSG, run:
+
+
+```
+$ singularity shell \
+   /cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0
+```
+
+
+- Once it starts, you should see the following prompt: `Singularity osgvo-r:3.5.0:~>`
+
+
+- we can try to run R by typing R in our terminal:
+
+```
+$ Singularity osgvo-r:3.5.0:~> R
+```
+
+
+- you can quit out with `q()`
+
+```
+> q()
+Save workspace image? [y/n/c]: n
+Singularity osgvo-r:3.5.0:~>
+```
+
+### Add R libraries
+
+```
+mkdir tutorial-R-addlib
+cd tutorial-R-addlib
+```
+
+
+```
+mkdir -p R-packages
+singularity shell /cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0
+export R_LIBS=$PWD/R-packages
+export TMPDIR=$PWD
+```
+
+```
+Singularity osgvo-r:3.5.0:~> R
+> .libPaths()
+[1] "/home/alice/tutorial-R-addlib/R-packages"
+[2] "/usr/lib64/R/library"                     
+[3] "/usr/share/R/library"
+```
+
+
+
+
+
+### Build the HTCondor job
+
+To prepare our R job to run on the OSPool, 
+we need to create a wrapper for our R environment,
+based on the setup we did in previous sections. 
+
+Create the file R-wrapper.sh with this text inside the file:
+
+```
+#!/bin/bash
+
+# set TMPDIR variable
+mkdir rtmp
+export TMPDIR=$_CONDOR_SCRATCH_DIR/rtmp
+
+Rscript hello_world.R
+```
+
+
+Once done, exit the file.
+We will now change the permissions on the wrapper script:
+
+
+```
+$ chmod +x R-wrapper.sh
+```
+
+
+Now that we've created a wrapper, 
+let's build a HTCondor submit file around it.
+Using a text editor, create a file called R.submit with the following text inside it:
+
+
+```
+universe = vanilla
+log = R.log.$(Cluster).$(Process)
+error = R.err.$(Cluster).$(Process)
+output = R.out.$(Cluster).$(Process)
+
++SingularityImage = "/cvmfs/singularity.opensciencegrid.org/opensciencegrid/osgvo-r:3.5.0" 
+executable = R-wrapper.sh
+transfer_input_files = hello_world.R
+
+request_cpus = 1
+request_memory = 1GB
+request_disk = 1GB
+
+queue 1
+```
+
+
+
+```
+$ condor_submit R.submit
+Submitting job(s)
+1 job(s) submitted to cluster 3796250.
+$ condor_q user
+```
+
+
+```
+$ condor_q
+-- Schedd: login03.osgconnect.net : <192.170.227.22:9618?... @ 05/13/19 09:51:04
+OWNER      BATCH_NAME     SUBMITTED   DONE   RUN    IDLE  TOTAL JOB_IDS
+user       ID: 3796250   5/13 09:50      _      _      1      1 3796250.0
+```
+
+
+
+You can follow the status of your job cluster with the connect watch command, which shows condor_q output that refreshes each 5 seconds. Press control-C to stop watching.
+
+Since our jobs prints to standard out, we can check the output files. Let's see what one looks like:
+
+
+```
+$ cat R.out.3796250.0
+
+```
+
+
+
+
+## edit text file 
+
+```
+nano <file-name>
+
+```
