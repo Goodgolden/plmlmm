@@ -108,9 +108,21 @@ gen_all_ranef <- function(fullset = margin_mean,
 ## }}}--------------------------------------------------------------------------
 
 
-# simulation1 <- gen_all_ranef(seed = 6)
-# View(simulation1)
+## 3.6 training and testing {{{-------------------------------------------------
+save_dataset <- function(dataset) {
 
+  train_id <- unique(dataset$id) %>%
+    sample(913)
+
+  dataset <- as.data.frame(dataset) %>%
+    mutate(group = case_when(id %in% train_id ~ "training",
+                             id %!in% train_id ~ "testing"))
+
+  return(dataset)
+
+}
+
+## }}}--------------------------------------------------------------------------
 
 
 

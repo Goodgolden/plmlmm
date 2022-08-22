@@ -9,16 +9,20 @@ authors:
     email: "xin.2.jin@cuanschutz.edu"
 
 abstract: |
-  Predictive mean matching is an easy-to-use and versatile method.
+
+  The traditional predictive modeling approach mainly relies on global inference and universal modelling with all available data. However, such approach may overlook the cultural diversity and genetic heterogeneity for patients.  using fewer but more similar data could get higher predictive performance than using overall available data.
+  Recently, curving matching prediction methods, based on predictive modeling with similar matching donars, has been successfully applied in the medical data analysis. This curve matching prediction aquires the information of "people-like-me", with the nearest neighbors of predictive mean. The predictive mean matching can avoid the dataset noise and model mispecification, with respect to given metrics. 
+  Through exhaustive comparisons for specific target and the most similar matching donor-cohort with predictive mean, an assessment specifc to the given patient can help in identifying his similar patients.
+  In this paper, 
+  
+  
+  
   The model is implicit (Little and Rubin 2002), which means that there is no need to define an explicit model for the distribution of the missing values. Because of this, predictive mean matching is less vulnerable
-   In contrast, the imputations created by predictive mean matching follow the data quite nicely, even though the predictive mean itself is clearly off-target for some of the ages. 
+  
+  
+   In contrast, the imputations created by predictive mean matching follow the data quite nicely, even though the predictive mean itself is clearly off-target. 
    
-   This example shows that predictive mean matching is robust against misspecification, where the normal model is not.
-  Predictive mean matching is an example of a hot deck method, where values are imputed using values from the complete cases matched with respect to some metric. 
-  
-  Curve matching[3] is a nearest neighbour technique for individual prediction that constructs a prediction by aggregating the histories of “people-like-me”. 
-  
-  
+
   There are different strategies for defining the set and number of candidate donors.
    Predictive mean matching performs very badly when \(d\) is small and there are lots of ties for the predictors among the individuals to be imputed.
    
@@ -41,6 +45,61 @@ output: rticles::arxiv_article
 
 # Introduction
 
+Most commonly, through 
+exhaustive comparisons between a given patient and a cohort of existing patients, an 
+assessment specifc to the given patient can help in identifying his similar patients.
+The purpose of "people-like-me" methods is to find the donors Most commonly, through 
+exhaustive comparisons between a given patient and a cohort of existing patients, an 
+assessment specifc to the given patient can help in identifying his similar patients.
+
+s who agreed 
+the most with each patient. Te result suggested that using fewer but more similar data 
+could get higher predictive performance than using overall available data. David et al. 
+[20] proposed an algorithm for the anomaly detection and characterization on the basis 
+of the Euclidean distance
+
+
+
+
+ The results demonstrated that personalized predictive models showed a 
+higher performance.
+Many previous studies usually calculated the patient similarity using single similarity measures (e.g., Euclidean distance, cosine distance, and Mahalanobis distance), and 
+most of them did not take the importance of patient features into consideration while 
+calculating the similarity. In this study, we aimed to investigate in depth the patient similarity in the following two aspects. One is using diferent similarity metrics for diferent 
+types of feature data. Te other is assigning diferent weights (importance) to patient 
+features when integrating feature similarities into a patient similarity
+
+
+many studies have found secondary use such as patient trajectory modeling, disease inference and clinical decision support system. It is recommended to denoise data before building a global predictive model, which will be time consuming and challenging to represent and model. In this context, individualized predictive modeling based on patient similarity emerged and was shown to be adjustable for individual patients. Employing patient similarity helps to identify a 
+precision cohort for an index patient, which will then be used to train a personalized 
+model. Accordingly, when building a predictive model for an index patient, training samples are determined as “patients like me,” instead of using all available training samples in a conventional way. “Patients like me” are selected from the training sample set 
+on the basis of similarity between the index patient and each training sample. Of note, 
+based on patient similarity, patients with noisy data are less likely to be selected as similar patients of an index patient for the reason of the less similarity between them. Patient 
+similarity is usually measured by considering information on demographics, disease history, comorbidities, laboratory tests, hospitalizations, treatment, and pharmacotherapy. 
+Such data are easily extracted from the EMR for tens of millions of patients [13].
+In this study, we defned a patient as a vector in a d-dimensional feature space. Ten, 
+a multi-dimensional approach to estimate patient similarity was proposed. To demonstrate the efectiveness of the proposed similarity measure, the most similar patients 
+were retrieved to build personalized models to predict the diabetes status of a given 
+patient
+
+
+Four methods has been proposed by Andridge and Little(2010) Hot deck imputation:
+
+  1. "The chosen threshold" 
+  Choose a threshold η, and take all i for which |yˆi − yˆj | < η as candidate donors for imputing j. Randomly sample one donor from the candidates, and take its yi as replacement value.
+  
+  
+  2. "The nearest neighbor" , i.e., the case i for which |yˆi −yˆj | is minimal as the donor. This is known as “nearest neighbor hot deck,” “deterministic hot deck” or “closest predictor.”
+  
+  
+  3. "Sampling from k neighbors" Find the d candidates for which |yˆi − yˆj | is minimal, and sample one of them. Usual values for d are 3, 5 and 10. There is also an adaptive method to specify the number of donors (Schenker and Taylor, 1996).
+  
+  
+  4. "Sampling from probability" Sample one donor with a probability that depends on |yˆi − yˆj | (Siddique and Belin, 2008).
+
+
+Existing approaches to modeling with predictive mean matching mainly rely on single predictive mean value on one single time point and a fixed number of candidate donors. These simplified modeling strategies may give a rise of several problems. 
+
 The GAMLSS method (Rigby and Stasinopoulos, 2005; Stasinopoulos et al., 2017) extends both the generalized linear model and the generalized additive model. A unique feature of GAMLSS is its ability to specify a (pos- sibly nonlinear) model for each of the parameters of the distribution, thus giving rise to an extremely flexible toolbox that can be used to model almost any distribution. The gamlss package contains over 60 built-in distributions. Each distribution comes with a function to draw random variates, so once the gamlss model is fitted, it can also be used to draw imputations. 
 
 
@@ -49,11 +108,32 @@ Various metrics are possible to define the distance between the cases. The predi
 
 The predicted value only needs to be a convenient one-number summary of the important information that relates the covariates to the target. Calculation is straightforward, and it is easy to include nominal and ordinal variables.
 
-AndridgeandLittle(2010)distinguish four methods:
-1. Choose a threshold η, and take all i for which |yˆi − yˆj | < η as candidate donors for imputing j. Randomly sample one donor from the candidates, and take its yi as replacement value.
-2. Take the closest candidate, i.e., the case i for which |yˆi −yˆj | is minimal as the donor. This is known as “nearest neighbor hot deck,” “deterministic hot deck” or “closest predictor.”
-3. Find the d candidates for which |yˆi − yˆj | is minimal, and sample one of them. Usual values for d are 3, 5 and 10. There is also an adaptive method to specify the number of donors (Schenker and Taylor, 1996).
-4. Sample one donor with a probability that depends on |yˆi − yˆj | (Siddique and Belin, 2008).
+
+
+### --------------------------
+The work presented here expands our previous preliminary
+study, as we 1) further assessed the adequacy of other existing
+embeddings for modeling medical concept dependence, 2)
+leveraged the similarity model by considering each diagnosis
+of ciliopathy as index (as opposed to using average similarity
+with all diagnosed patients) to take into account the high
+heterogeneity of ciliopathies, and 3) applied the developed
+model to two large-scale unbalanced datasets containing
+approximately 10,000 and 60,000 controls with kidney
+manifestations in the clinical data warehouse
+
+
+8. Ng K, Sun J, Hu J, Wang F. Personalized predictive modeling and risk factor identifcation using patient similarity. 
+AMIA Summits Transl Sci Proc. 2015;2015:132–6.
+9. Whellan DJ, Ousdigian KT, Alkhatib SM, Pu W, Sarkar S, Porter CB, Pavri BB, O’Connor CM, Investigators PS. Combined 
+heart failure device diagnostics identify patients at higher risk of subsequent heart failure hospitalizations: results 
+from PARTNERS HF (program to access and review trending information and evaluate correlation to symptoms in 
+patients with heart failure) study. J Am Coll Cardiol. 2010;55(17):1803–10.
+10. Sepanski RJ, Godambe SA, Mangum CD, Bovat CS, Zaritsky AL, Shah SH. Designing a pediatric severe sepsis screening tool. Front Pediatr. 2014;2(56):56.
+11. Wu J, Roy J, Stewart W. Prediction modeling using EHR data: challenges, strategies, and a comparison of machine 
+learning approaches. Med Care. 2010;48(6 Suppl):S106.
+
+
 
 
 
@@ -134,11 +214,20 @@ similarity between the curves of the donors and the target can be taken into acc
 We used the following steps to train and test both PLM and LMM prediction approaches: (1) build the approach using the training data, (2) examine prediction performance and tune the approach using the training data (i.e., within-sample testing), and (3) test the accuracy and precision of each approach using the testing data (i.e., out-of-sample testing). We compared performance of PLM and LMM predictions in terms of accuracy and precision across all individuals and all timepoints.
 
 
+When no more than 30% of the whole training sample (i.e., 3000 samples) were used 
+to build the models, all three personalized predictive models outperformed the corresponding traditional models, which were built on randomly selected training samples 
+of the same size as the personalized models
+
+
  We applied a form of predictive mean matching to determine the relative weights for each matching variable using the following steps.28 First, we imputed a 365- day TUG value for each patient in the training dataset via the brokenstick package in R (because data were collected at irregular timepoints).29 Next, we created a linear model to estimate the imputed 365-day TUG value using our matching variables of interest 
 We then used this linear model to estimate the 365-day TUG value for (a) each patient in the training dataset and (b) the index patient. Finally, the patients from the training dataset with the closest predicted 365-day TUG value to the index patient were selected as matches; we used 35 patient matches based on our previous work.12
 
 
 We modeled the observed TUG data from the matching patient records to form the index patient’s predicted TUG recovery trajectory. We used Generalized Additive Models for Location, Scale, and Shape (GAMLSS) to flexibly model the median, variance, and skewness of TUG recovery from postoperative days 1-425.30 The GAMLSS model included a cubic spline smoother with 3 degrees of freedom for the location parameter and 1 degree of freedom for the shape parameter.
+
+
+A previous study suggested that in personalized medicine, using patient similarity in data-driven analysis of patient cohorts will signifcantly assist physicians to make 
+informed decisions and choose the most appropriate clinical trial
 
 
 # Examples of citations, figures, tables, references

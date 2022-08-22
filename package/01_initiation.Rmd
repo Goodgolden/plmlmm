@@ -170,7 +170,7 @@ test()
 
 ```{r}
 ## add description files to the package
-usethis::use_tidy_description()
+# usethis::use_tidy_description()
 
 
 ## add datasets to the package
