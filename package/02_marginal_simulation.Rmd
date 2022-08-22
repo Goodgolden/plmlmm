@@ -119,19 +119,34 @@ fit5$sigma
 # library(furrr)
 # # Set a "plan" for how the code should run.
 # plan(multisession, workers = 6)
-# library(tictoc)
+library(tictoc)
 
 tic()
 # This does run in parallel!
 simulation_1k <- map(1:1000, 
-                     ~gen_all_ranef(seed = .x))
+                     ~plmlmm:::gen_all_ranef(seed = .x) %>%
+                       save_dataset())
 toc()
+
+simulation_1k <- simulation_1k %>%
+  map(~save_dataset(.x))
+
+simulation_100 <- simulation_100 %>%
+  map(~save_dataset(.x))
+
+View(simulation_1k[[1]])
+```
+
+
+```{r}
+save(simulation_1k, file = "plmlmm_simulation_1k_dataset_20220821.Rdata")
+save(simulation_100, file = "plmlmm_simulation_100_dataset_20220820.Rdata")
 
 ```
 
 
 
-```{r}
+```{r eval=FALSE, include=FALSE}
 library(furrr)
 # Set a "plan" for how the code should run.
 plan(multisession, workers = 6)
@@ -145,4 +160,7 @@ estimation_1k <- map(simulation_1k,
                           data = .x))
 toc()
 ```
+
+
+
 
