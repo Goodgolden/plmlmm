@@ -33,10 +33,12 @@ brokenstick_prediction <-
   #                 eval(lmm_var)) %>%
   #   unique()
 
+
   formula <- paste0(outcome, "~", time, "|", id)
   bks <- brokenstick::brokenstick(formula = as.formula(formula),
                                   data = train_data,
                                   knots = knots)
+
 
 
   dataset_baseline <- train_data %>%
