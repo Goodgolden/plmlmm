@@ -2,7 +2,7 @@
 % Please edit documentation in R/01_plm.R
 \name{brokenstick_prediction}
 \alias{brokenstick_prediction}
-\title{Title Broken}
+\title{Title Broken stick model}
 \usage{
 brokenstick_prediction(
   outcome = "ht",
@@ -10,13 +10,14 @@ brokenstick_prediction(
   id = "id",
   knots = c(6, 10, 12),
   pred_time = c(2, 4, 6, 8, 10, 12, 14, 16),
-  choice = "predicted",
-  dataset
+  choice = c("predicted", "baseline", "observed", "testing"),
+  train_data,
+  newdata = NULL
 )
 }
 \arguments{
 \item{dataset}{}
 }
 \description{
-Title Broken
+Title Broken stick model
 }

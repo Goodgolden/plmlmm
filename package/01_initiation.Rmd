@@ -186,6 +186,8 @@ use_readme_rmd()
 build_readme()
 
 usethis::use_roxygen_md()
+
+document()
 ```
 
 
