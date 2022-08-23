@@ -126,6 +126,15 @@ brokenstick_prediction <-
 
 
 ## 1.2 linear fitting {{{-------------------------------------------------------
+#' Title
+#'
+#' @param lm_formula
+#' @param bks_pred
+#'
+#' @return
+#' @export
+#'
+#' @examples
 linear_brokenstick <-
   function(lm_formula = "`.pred` ~ time * sex + baseline",
            bks_pred) {
@@ -154,7 +163,25 @@ linear_brokenstick <-
 
 
 ## 1.3 prediction matching {{{--------------------------------------------------
-#' @param x if \code{a} then 1, if \code{b} then 2, if \code{c} then 3.
+
+#' Title
+#'
+#' @param lb_data
+#' @param obs_data
+#' @param match_methods
+#' @param match_num
+#' @param match_alpha
+#' @param match_time
+#' @param gamlss_formula
+#' @param gamsigma_formula
+#' @param match_plot
+#' @param predict_plot
+#' @param sbj
+#'
+#' @return
+#' @export
+#'
+#' @examples
 pred_matching <- function(lb_data = lb_data,
                           obs_data = train,
                           match_methods = c("mahalanobis", "euclidean", "single"),
@@ -318,6 +345,16 @@ pred_matching <- function(lb_data = lb_data,
 
 
 ## 1.4 individual people-like-me matching plot {{{------------------------------
+#' Title
+#'
+#' @param quantile
+#' @param observation
+#' @param title
+#'
+#' @return
+#' @export
+#'
+#' @examples
 plm_ind_plot <- function(quantile,
                          observation,
                          title = NULL) {

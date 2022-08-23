@@ -1,4 +1,11 @@
+
+#' Title
+#'
+#' @return
 #' @export
+#'
+#' @examples
+
 run_shiny <- function() {
   appDir <- system.file("shiny-examples",
                         "myapp",

@@ -8,26 +8,15 @@ authors:
     location: Aurora, CO, USA
     email: "xin.2.jin@cuanschutz.edu"
 abstract: |
-  The traditional predictive modeling approach mainly relies on global inference and universal modelling with all available data. However, such approach may overlook the cultural diversity and genetic heterogeneity for patients.  using fewer but more similar data could get higher predictive performance than using overall available data.
-  Recently, curving matching prediction methods, based on predictive modeling with similar matching donars, has been successfully applied in the medical data analysis. This curve matching prediction aquires the information of "people-like-me", with the nearest neighbors of predictive mean. The predictive mean matching can avoid the dataset noise and model mispecification, with respect to given metrics. 
-  Through exhaustive comparisons for specific target and the most similar matching donor-cohort with predictive mean, an assessment specifc to the given patient can help in identifying his similar patients.
-  In this paper, 
+  The traditional predictive modeling approach mainly relies on global inference and universal modelling with all available data. 
+  However, such approach may overlook the cultural diversity and genetic heterogeneity for patients.  
+  A personalized modeling strategy prefers fewer but more similar data to getting higher predictive performance than using overall training data.
+  Recently, curving matching prediction methods, based on predictive modeling with similar matching donars, has been successfully applied in the personlized medical data analysis. This curve matching prediction aquires the information of "people-like-me", with the nearest neighbors of predictive mean. The predictive mean matching can avoid the dataset noise and model mispecification, with respect to given metrics. 
+  Through exhaustive comparisons for specific target and the most similar matching donor-cohort with predictive mean, an assessment specifc to the given patient can help in identifying his similar patients. This strategy will provide implicit modeling with less misspecification of unobserved predicted values. Hence, the curving matching based on predictive mean matching is less vulnerable. 
+  In this paper, the authors expand the application of curving matching from single time predictive mean matching to multiple time points matching with both Euclidean distance and Mahalanobis distance. The authors provided both training and testing evaluations for PLM methods and compared the testing results with linear mixed model dynamic prediction. 
   
   
-  
-  The model is implicit (Little and Rubin 2002), which means that there is no need to define an explicit model for the distribution of the missing values. Because of this, predictive mean matching is less vulnerable
-  
-  
-   In contrast, the imputations created by predictive mean matching follow the data quite nicely, even though the predictive mean itself is clearly off-target. 
-   
-  There are different strategies for defining the set and number of candidate donors.
-   Predictive mean matching performs very badly when \(d\) is small and there are lots of ties for the predictors among the individuals to be imputed.
-   
-   
-   The reason is that the tied individuals all get the same imputed value in each imputed dataset when \(d = 1\) (Ian White, personal communication). Setting \(d\) to a high value (say \(n/10\)) alleviates the duplication problem, but may introduce bias since the likelihood of bad matches increases.
-   
-   
-   Schenker and Taylor (1996), evaluated \(d = 3\), \(d = 10\) and an adaptive scheme. The adaptive method was slightly better than using a fixed number of candidates, but the differences were small. compared various settings for \(d\), and found that \(d = 5\) and \(d = 10\) generally provided the best results.
+
 keywords:
   - predictive mean matching
   - personalized data-driven prediction
@@ -44,6 +33,49 @@ editor_options:
 
 # Introduction
 
+## curving matching predtive methods (people like me) gamlss
+stef in his mahalanobis distances
+
+personalized data analysis over the tranditional generlized models
+
+## predictive mean matching 
+like knn nearest neighbor matching 
+different metrics and donor selection methods 
+
+# Motivational Dataset
+
+# see John Rice paper and EJC 
+# Angla Moss paper.
+
+# Methods
+
+## algorithm of plm
+### brokenstick
+### multivariate lm predictive mean matching with imputation
+### finding the donor with different metrics 
+#### traditionally we only use one single time point as metric(limitions)
+#### euclidean distance and mahalanobis but with fixed donor numbers
+#### mahalanobis with F-est pvalues to find the flexible number of matching.
+
+### gamlss model with matching donors cohort
+### centiles and prediction only based on baseline value
+
+## lmm dynamic prediction 
+
+# Results
+
+## Data analysis
+### training and testing cross validation
+### comparison between plm and lmm dypred
+
+## Simulation study
+### show how we simulated  the data. Supply
+### training and testing cross validation
+### comparison between plm and lmm dypred
+
+# Discussion
+
+
 Disease populations, clinical practice, and healthcare systems are
 constantly evolving. This can result in clinical prediction models
 quickly becoming outdated and less accurate over time. A potential
@@ -54,15 +86,12 @@ accuracy by evolving over time in response to observed changes.
 
 Most commonly, through exhaustive comparisons between a given patient
 and a cohort of existing patients, an assessment specifc to the given
-patient can help in identifying his similar patients. The purpose of
-"people-like-me" methods is to find the donors Most commonly, through
-exhaustive comparisons between a given patient and a cohort of existing
-patients, an assessment specifc to the given patient can help in
-identifying his similar patients.
+patient can help in identifying his similar patients. 
 
-s who agreed the most with each patient. Te result suggested that using
+The purpose of "people-like-me" methods is to find the donors Most commonly, through exhaustive comparisons between a given patient and a cohort of existing patients, an assessment specifc to the given patient can help in
+identifying his similar patients, who agreed the most with each patient. The result suggested that using
 fewer but more similar data could get higher predictive performance than
-using overall available data. David et al. [20] proposed an algorithm
+using overall available data. David et al. proposed an algorithm
 for the anomaly detection and characterization on the basis of the
 Euclidean distance
 
@@ -106,22 +135,22 @@ diabetes status of a given patient
 Four methods has been proposed by Andridge and Little(2010) Hot deck
 imputation:
 
-1.  "The chosen threshold" Choose a threshold η, and take all i for
-    which \|yˆi − yˆj \| \< η as candidate donors for imputing j.
+1.  "The chosen threshold" Choose a threshold, and take all i for
+    which  as candidate donors for imputing j.
     Randomly sample one donor from the candidates, and take its yi as
     replacement value.
 
-2.  "The nearest neighbor" , i.e., the case i for which \|yˆi −yˆj \| is
+2.  "The nearest neighbor" , i.e., the case i for which \|yi yj \| is
     minimal as the donor. This is known as "nearest neighbor hot deck,"
     "deterministic hot deck" or "closest predictor."
 
-3.  "Sampling from k neighbors" Find the d candidates for which \|yˆi −
-    yˆj \| is minimal, and sample one of them. Usual values for d are 3,
+3.  "Sampling from k neighbors" Find the d candidates for which \|yi 
+    yj \| is minimal, and sample one of them. Usual values for d are 3,
     5 and 10. There is also an adaptive method to specify the number of
     donors (Schenker and Taylor, 1996).
 
 4.  "Sampling from probability" Sample one donor with a probability that
-    depends on \|yˆi − yˆj \| (Siddique and Belin, 2008).
+    depends on \|yi  yj \| (Siddique and Belin, 2008).
 
 Existing approaches to modeling with predictive mean matching mainly
 rely on single predictive mean value on one single time point and a
@@ -149,7 +178,17 @@ the important information that relates the covariates to the target.
 Calculation is straightforward, and it is easy to include nominal and
 ordinal variables.
 
-### --------------------------
+   In contrast, the imputations created by predictive mean matching follow the data quite nicely, even though the predictive mean itself is clearly off-target. 
+   
+  There are different strategies for defining the set and number of candidate donors.
+   Predictive mean matching performs very badly when \(d\) is small and there are lots of ties for the predictors among the individuals to be imputed.
+   
+   
+   The reason is that the tied individuals all get the same imputed value in each imputed dataset when \(d = 1\) (Ian White, personal communication). Setting \(d\) to a high value (say \(n/10\)) alleviates the duplication problem, but may introduce bias since the likelihood of bad matches increases.
+   
+   
+   Schenker and Taylor (1996), evaluated \(d = 3\), \(d = 10\) and an adaptive scheme. The adaptive method was slightly better than using a fixed number of candidates, but the differences were small. compared various settings for \(d\), and found that \(d = 5\) and \(d = 10\) generally provided the best results.
+
 
 The work presented here expands our previous preliminary study, as we 1)
 further assessed the adequacy of other existing embeddings for modeling
@@ -207,10 +246,7 @@ an adaptive method for setting d could improve small sample behavior.
 Meanwhile, the number of donors can be changed through the donors
 argument.
 
-Table 3.3 repeats the simulation experiment done in Tables 3.1 and 3.2
-for predictive mean matching for three different choices of the number d
-of candidate donors. Results are given for n = 50 and n = 1000. For n =
-50 we find that β1 is increasingly biased towards the null for larger d.
+
 Because of the bias, the coverage is lower than nominal. For missing x
 the bias is much smaller. Setting d to a lower value, as recommended by
 Kleinke (2017), improves point estimates, but the magnitude of the
@@ -260,7 +296,7 @@ multiple imputation, such as patient recovery after an operation,
 prediction of longevity, and decision-making when more than one
 treatment is available. [3]
 
-# methods
+# Methods
 
 Therefore, the information of these children at a later age is
 available. The first step is to fit a linear regression model on the
@@ -294,28 +330,6 @@ predicted value of a donor and the predicted value of the target at a
 particular future time point. The MD is defined as the distance between
 two N dimensional points scaled by the variation in each component of
 the point.
-
-# Headings: first level
-
-\label{sec:headings}
-
-You can use directly LaTeX command or Markdown text.
-
-LaTeX command can be used to reference other section. See Section
-\ref{sec:headings}. However, you can also use **bookdown** extensions
-mechanism for this.
-
-## Headings: second level
-
-You can use equation in blocks
-
-$$
-\xi _{ij}(t)=P(x_{t}=i,x_{t+1}=j|y,v,w;\theta)= {\frac {\alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}{\sum _{i=1}^{N} \sum _{j=1}^{N} \alpha _{i}(t)a^{w_t}_{ij}\beta _{j}(t+1)b^{v_{t+1}}_{j}(y_{t+1})}}
-$$
-
-But also inline i.e $z=x+y$
-
-### Headings: third level
 
 as the profiles of the matched donors can substantially differ from the
 profile of the target. similarity between the curves of the donors and
@@ -357,6 +371,9 @@ the patients from the training dataset with the closest predicted
 365-day TUG value to the index patient were selected as matches; we used
 35 patient matches based on our previous work.12
 
+
+A brief summary of plm methods.
+
 We modeled the observed TUG data from the matching patient records to
 form the index patient's predicted TUG recovery trajectory. We used
 Generalized Additive Models for Location, Scale, and Shape (GAMLSS) to
@@ -392,7 +409,7 @@ appropriate clinical trial
 
 ### Subjects
 
-[![Table 1](figure/01_table1.png "Tables")](Supplementary%20Table%201)
+<!-- [![Table 1](figure/01_table1.png "Tables")](Supplementary%20Table%201) -->
 
 -   **check for time!!**: 1772 participants enrolled between *2004 and
     2006*. The data cut-off for the current analysis was *December
@@ -517,11 +534,11 @@ provide the examples:
 
 -   special cases of dropped out after certain time
 
-## people-like-me methods
+## people-like-me methods (What is the basic steps)
 
 Assumptions:
 
--   The trajectory between break ages follows a strict linear functino.
+-   The trajectory between break ages follows a strict linear functionals.
     This assumption may fail for processes that are convex or concave in
     time. For example, human height growth in centimeters growth is
     concave, so setting breakpoints far apart results introduces
@@ -562,13 +579,13 @@ iterations and somewhat on sample size.
 
 # Supplementary
 
-[![Supplementary Table 1](figure/01_table0.png "Tables")](Table%201)
+<!-- [![Supplementary Table 1](figure/01_table0.png "Tables")](Table%201) -->
 
-including the abacus plot to visualise this variation.
+<!-- including the abacus plot to visualise this variation. -->
 
-![Supplementary Figure 1](figure/abacus.png)
+<!-- ![Supplementary Figure 1](figure/abacus.png) -->
 
-# Examples of citations, figures, tables, references
+##### Examples of citations, figures, tables, references
 
 \label{sec:others}
 
@@ -606,7 +623,7 @@ produces
   \url{https://www.ctan.org/pkg/booktabs}
 \end{center}
 ```
-## Figures
+#### Figures
 
 You can insert figure using LaTeX directly.
 
@@ -621,7 +638,6 @@ the first footnote.]
   \label{fig:fig1}
 \end{figure}
 ```
-But you can also do that using R.
 
 ```{r fig2, fig.cap = "Another sample figure"}
 plot(mtcars$mpg)
@@ -629,7 +645,7 @@ plot(mtcars$mpg)
 
 You can use **bookdown** to allow references for Tables and Figures.
 
-## Tables
+##### Tables
 
 Below we can see how to use tables.
 
@@ -654,14 +670,3 @@ source Rmd file.
   \label{tab:table}
 \end{table}
 ```
-You can also use R code for that.
-
-```{r}
-knitr::kable(head(mtcars), caption = "Head of mtcars table")
-```
-
-## Lists
-
--   Item 1
--   Item 2
--   Item 3

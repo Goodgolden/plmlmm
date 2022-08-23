@@ -1,0 +1,947 @@
+\documentclass{article}
+
+\usepackage{arxiv}
+
+\usepackage[utf8]{inputenc} % allow utf-8 input
+\usepackage[T1]{fontenc}    % use 8-bit T1 fonts
+\usepackage{lmodern}        % https://github.com/rstudio/rticles/issues/343
+\usepackage{hyperref}       % hyperlinks
+\usepackage{url}            % simple URL typesetting
+\usepackage{booktabs}       % professional-quality tables
+\usepackage{amsfonts}       % blackboard math symbols
+\usepackage{nicefrac}       % compact symbols for 1/2, etc.
+\usepackage{microtype}      % microtypography
+\usepackage{graphicx}
+
+\title{A template for the \emph{arxiv} style}
+
+\author{
+    Randy
+    \thanks{Use footnote for providing further information about author}
+   \\
+    Department of Biostatistics and Bioinformatics \\
+    University of Colorado \\
+  Aurora, CO, USA \\
+  \texttt{\href{mailto:xin.2.jin@cuanschutz.edu}{\nolinkurl{xin.2.jin@cuanschutz.edu}}} \\
+  }
+
+% Pandoc syntax highlighting
+\usepackage{color}
+\usepackage{fancyvrb}
+\newcommand{\VerbBar}{|}
+\newcommand{\VERB}{\Verb[commandchars=\\\{\}]}
+\DefineVerbatimEnvironment{Highlighting}{Verbatim}{commandchars=\\\{\}}
+% Add ',fontsize=\small' for more characters per line
+\usepackage{framed}
+\definecolor{shadecolor}{RGB}{248,248,248}
+\newenvironment{Shaded}{\begin{snugshade}}{\end{snugshade}}
+\newcommand{\AlertTok}[1]{\textcolor[rgb]{0.94,0.16,0.16}{#1}}
+\newcommand{\AnnotationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\AttributeTok}[1]{\textcolor[rgb]{0.77,0.63,0.00}{#1}}
+\newcommand{\BaseNTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\BuiltInTok}[1]{#1}
+\newcommand{\CharTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\CommentTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\CommentVarTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ConstantTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ControlFlowTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\DataTypeTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{#1}}
+\newcommand{\DecValTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\DocumentationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\ErrorTok}[1]{\textcolor[rgb]{0.64,0.00,0.00}{\textbf{#1}}}
+\newcommand{\ExtensionTok}[1]{#1}
+\newcommand{\FloatTok}[1]{\textcolor[rgb]{0.00,0.00,0.81}{#1}}
+\newcommand{\FunctionTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\ImportTok}[1]{#1}
+\newcommand{\InformationTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+\newcommand{\KeywordTok}[1]{\textcolor[rgb]{0.13,0.29,0.53}{\textbf{#1}}}
+\newcommand{\NormalTok}[1]{#1}
+\newcommand{\OperatorTok}[1]{\textcolor[rgb]{0.81,0.36,0.00}{\textbf{#1}}}
+\newcommand{\OtherTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{#1}}
+\newcommand{\PreprocessorTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textit{#1}}}
+\newcommand{\RegionMarkerTok}[1]{#1}
+\newcommand{\SpecialCharTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\SpecialStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\StringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\VariableTok}[1]{\textcolor[rgb]{0.00,0.00,0.00}{#1}}
+\newcommand{\VerbatimStringTok}[1]{\textcolor[rgb]{0.31,0.60,0.02}{#1}}
+\newcommand{\WarningTok}[1]{\textcolor[rgb]{0.56,0.35,0.01}{\textbf{\textit{#1}}}}
+
+% tightlist command for lists without linebreak
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
+% From pandoc table feature
+\usepackage{longtable,booktabs,array}
+\usepackage{calc} % for calculating minipage widths
+% Correct order of tables after \paragraph or \subparagraph
+\usepackage{etoolbox}
+\makeatletter
+\patchcmd\longtable{\par}{\if@noskipsec\mbox{}\fi\par}{}{}
+\makeatother
+% Allow footnotes in longtable head/foot
+\IfFileExists{footnotehyper.sty}{\usepackage{footnotehyper}}{\usepackage{footnote}}
+\makesavenoteenv{longtable}
+
+% Pandoc citation processing
+\newlength{\cslhangindent}
+\setlength{\cslhangindent}{1.5em}
+\newlength{\csllabelwidth}
+\setlength{\csllabelwidth}{3em}
+\newlength{\cslentryspacingunit} % times entry-spacing
+\setlength{\cslentryspacingunit}{\parskip}
+% for Pandoc 2.8 to 2.10.1
+\newenvironment{cslreferences}%
+  {}%
+  {\par}
+% For Pandoc 2.11+
+\newenvironment{CSLReferences}[2] % #1 hanging-ident, #2 entry spacing
+ {% don't indent paragraphs
+  \setlength{\parindent}{0pt}
+  % turn on hanging indent if param 1 is 1
+  \ifodd #1
+  \let\oldpar\par
+  \def\par{\hangindent=\cslhangindent\oldpar}
+  \fi
+  % set entry spacing
+  \setlength{\parskip}{#2\cslentryspacingunit}
+ }%
+ {}
+\usepackage{calc}
+\newcommand{\CSLBlock}[1]{#1\hfill\break}
+\newcommand{\CSLLeftMargin}[1]{\parbox[t]{\csllabelwidth}{#1}}
+\newcommand{\CSLRightInline}[1]{\parbox[t]{\linewidth - \csllabelwidth}{#1}\break}
+\newcommand{\CSLIndent}[1]{\hspace{\cslhangindent}#1}
+
+\begin{document}
+\maketitle
+
+
+\begin{abstract}
+The traditional predictive modeling approach mainly relies on global
+inference and universal modelling with all available data. However, such
+approach may overlook the cultural diversity and genetic heterogeneity
+for patients. using fewer but more similar data could get higher
+predictive performance than using overall available data. Recently,
+curving matching prediction methods, based on predictive modeling with
+similar matching donars, has been successfully applied in the medical
+data analysis. This curve matching prediction aquires the information of
+``people-like-me'', with the nearest neighbors of predictive mean. The
+predictive mean matching can avoid the dataset noise and model
+mispecification, with respect to given metrics. Through exhaustive
+comparisons for specific target and the most similar matching
+donor-cohort with predictive mean, an assessment specifc to the given
+patient can help in identifying his similar patients. In this paper,
+
+The model is implicit (Little and Rubin 2002), which means that there is
+no need to define an explicit model for the distribution of the missing
+values. Because of this, predictive mean matching is less vulnerable
+
+In contrast, the imputations created by predictive mean matching follow
+the data quite nicely, even though the predictive mean itself is clearly
+off-target.
+
+There are different strategies for defining the set and number of
+candidate donors. Predictive mean matching performs very badly when
+\(d\) is small and there are lots of ties for the predictors among the
+individuals to be imputed.
+
+The reason is that the tied individuals all get the same imputed value
+in each imputed dataset when \(d = 1\) (Ian White, personal
+communication). Setting \(d\) to a high value (say \(n/10\)) alleviates
+the duplication problem, but may introduce bias since the likelihood of
+bad matches increases.
+
+Schenker and Taylor (1996), evaluated \(d = 3\), \(d = 10\) and an
+adaptive scheme. The adaptive method was slightly better than using a
+fixed number of candidates, but the differences were small. compared
+various settings for \(d\), and found that \(d = 5\) and \(d = 10\)
+generally provided the best results.
+\end{abstract}
+
+\keywords{
+    predictive mean matching
+   \and
+    personalized data-driven prediction
+   \and
+    multiple imputation
+   \and
+    Mahalanobis distance
+   \and
+    people-like-me
+  }
+
+\hypertarget{introduction}{%
+\section{Introduction}\label{introduction}}
+
+Disease populations, clinical practice, and healthcare systems are
+constantly evolving. This can result in clinical prediction models
+quickly becoming outdated and less accurate over time. A potential
+solution is to develop `dynamic' prediction models capable of retaining
+accuracy by evolving over time in response to observed changes.
+\href{https://diagnprognres.biomedcentral.com/articles/10.1186/s41512-018-0045-2}{1}
+
+Most commonly, through exhaustive comparisons between a given patient
+and a cohort of existing patients, an assessment specifc to the given
+patient can help in identifying his similar patients. The purpose of
+``people-like-me'' methods is to find the donors Most commonly, through
+exhaustive comparisons between a given patient and a cohort of existing
+patients, an assessment specifc to the given patient can help in
+identifying his similar patients.
+
+s who agreed the most with each patient. Te result suggested that using
+fewer but more similar data could get higher predictive performance than
+using overall available data. David et al.~{[}20{]} proposed an
+algorithm for the anomaly detection and characterization on the basis of
+the Euclidean distance
+
+The results demonstrated that personalized predictive models showed a
+higher performance. Many previous studies usually calculated the patient
+similarity using single similarity measures (e.g., Euclidean distance,
+cosine distance, and Mahalanobis distance), and most of them did not
+take the importance of patient features into consideration while
+calculating the similarity. In this study, we aimed to investigate in
+depth the patient similarity in the following two aspects. One is using
+diferent similarity metrics for diferent types of feature data. Te other
+is assigning diferent weights (importance) to patient features when
+integrating feature similarities into a patient similarity
+
+many studies have found secondary use such as patient trajectory
+modeling, disease inference and clinical decision support system. It is
+recommended to denoise data before building a global predictive model,
+which will be time consuming and challenging to represent and model. In
+this context, individualized predictive modeling based on patient
+similarity emerged and was shown to be adjustable for individual
+patients. Employing patient similarity helps to identify a precision
+cohort for an index patient, which will then be used to train a
+personalized model. Accordingly, when building a predictive model for an
+index patient, training samples are determined as ``patients like me,''
+instead of using all available training samples in a conventional way.
+``Patients like me'' are selected from the training sample set on the
+basis of similarity between the index patient and each training sample.
+Of note, based on patient similarity, patients with noisy data are less
+likely to be selected as similar patients of an index patient for the
+reason of the less similarity between them. Patient similarity is
+usually measured by considering information on demographics, disease
+history, comorbidities, laboratory tests, hospitalizations, treatment,
+and pharmacotherapy. Such data are easily extracted from the EMR for
+tens of millions of patients {[}13{]}. In this study, we defned a
+patient as a vector in a d-dimensional feature space. Ten, a
+multi-dimensional approach to estimate patient similarity was proposed.
+To demonstrate the efectiveness of the proposed similarity measure, the
+most similar patients were retrieved to build personalized models to
+predict the diabetes status of a given patient
+
+Four methods has been proposed by Andridge and Little(2010) Hot deck
+imputation:
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\item
+  ``The chosen threshold'' Choose a threshold, and take all i for which
+  as candidate donors for imputing j. Randomly sample one donor from the
+  candidates, and take its yi as replacement value.
+\item
+  ``The nearest neighbor'' , i.e., the case i for which \textbar yi yj
+  \textbar{} is minimal as the donor. This is known as ``nearest
+  neighbor hot deck,'' ``deterministic hot deck'' or ``closest
+  predictor.''
+\item
+  ``Sampling from k neighbors'' Find the d candidates for which
+  \textbar yi yj \textbar{} is minimal, and sample one of them. Usual
+  values for d are 3, 5 and 10. There is also an adaptive method to
+  specify the number of donors (Schenker and Taylor, 1996).
+\item
+  ``Sampling from probability'' Sample one donor with a probability that
+  depends on \textbar yi yj \textbar{} (Siddique and Belin, 2008).
+\end{enumerate}
+
+Existing approaches to modeling with predictive mean matching mainly
+rely on single predictive mean value on one single time point and a
+fixed number of candidate donors. These simplified modeling strategies
+may give a rise of several problems.
+
+The GAMLSS method (Rigby and Stasinopoulos, 2005; Stasinopoulos et al.,
+2017) extends both the generalized linear model and the generalized
+additive model. A unique feature of GAMLSS is its ability to specify a
+(pos- sibly nonlinear) model for each of the parameters of the
+distribution, thus giving rise to an extremely flexible toolbox that can
+be used to model almost any distribution. The gamlss package contains
+over 60 built-in distributions. Each distribution comes with a function
+to draw random variates, so once the gamlss model is fitted, it can also
+be used to draw imputations.
+
+Various metrics are possible to define the distance between the cases.
+The predictive mean matching metric was proposed by Rubin (1986) and
+Little (1988). This metric is particularly useful for missing data
+applications because it is optimized for each target variable
+separately.
+
+The predicted value only needs to be a convenient one-number summary of
+the important information that relates the covariates to the target.
+Calculation is straightforward, and it is easy to include nominal and
+ordinal variables.
+
+The work presented here expands our previous preliminary study, as we 1)
+further assessed the adequacy of other existing embeddings for modeling
+medical concept dependence, 2) leveraged the similarity model by
+considering each diagnosis of ciliopathy as index (as opposed to using
+average similarity with all diagnosed patients) to take into account the
+high heterogeneity of ciliopathies, and 3) applied the developed model
+to two large-scale unbalanced datasets containing approximately 10,000
+and 60,000 controls with kidney manifestations in the clinical data
+warehouse
+
+\begin{enumerate}
+\def\labelenumi{\arabic{enumi}.}
+\setcounter{enumi}{7}
+\tightlist
+\item
+  Ng K, Sun J, Hu J, Wang F. Personalized predictive modeling and risk
+  factor identifcation using patient similarity. AMIA Summits Transl Sci
+  Proc. 2015;2015:132--6.
+\item
+  Whellan DJ, Ousdigian KT, Alkhatib SM, Pu W, Sarkar S, Porter CB,
+  Pavri BB, O'Connor CM, Investigators PS. Combined heart failure device
+  diagnostics identify patients at higher risk of subsequent heart
+  failure hospitalizations: results from PARTNERS HF (program to access
+  and review trending information and evaluate correlation to symptoms
+  in patients with heart failure) study. J Am Coll Cardiol.
+  2010;55(17):1803--10.
+\item
+  Sepanski RJ, Godambe SA, Mangum CD, Bovat CS, Zaritsky AL, Shah SH.
+  Designing a pediatric severe sepsis screening tool. Front Pediatr.
+  2014;2(56):56.
+\item
+  Wu J, Roy J, Stewart W. Prediction modeling using EHR data:
+  challenges, strategies, and a comparison of machine learning
+  approaches. Med Care. 2010;48(6 Suppl):S106.
+\end{enumerate}
+
+There are different strategies for defining the set and number of
+candidate donors. Setting d = 1 is generally considered to be too low,
+as it may reselect the same donor over and over again. Predictive mean
+matching performs very badly when d is small and there are lots of ties
+for the predictors among the individuals to be imputed. The reason is
+that the tied individuals all get the same imputed value in each imputed
+dataset when d = 1 (Ian White, personal communication). Setting d to a
+high value (say n/10) alleviates the duplication problem, but may
+introduce bias since the likelihood of bad matches increases.
+
+Schenker and Taylor (1996) evaluated d = 3, d = 10 Morris et al.~(2014)
+compared various Kleinke (2017) found that d = 5 may be too high for
+sample size lower than n = 100, and suggested setting d = 1 for better
+point estimates for small samples. Gaffert et al.~(2016) explored
+scenarios in which candidate donors have different probabilities to be
+drawn, where the probability depends on the distance between the donor
+and recipient cases.
+
+Instead a closeness parameter needs to be specified, and this was made
+adaptive to the data. An advantage of using all donors is that the
+variance of the imputations can be corrected by the Parzen correction,
+which alleviates concerns about insuffi- cient variability of the
+imputes. Their simulations showed that with a small sample (n = 10), the
+adaptive method is clearly superior to methods with a fixed donor pool.
+
+an adaptive method for setting d could improve small sample behavior.
+Meanwhile, the number of donors can be changed through the donors
+argument.
+
+Because of the bias, the coverage is lower than nominal. For missing x
+the bias is much smaller. Setting d to a lower value, as recommended by
+Kleinke (2017), improves point estimates, but the magnitude of the
+effect depends on whether the missing values occur in x or y. For the
+sample size n = 1000 predictive mean matching appears well calibrated
+for d = 5 for missing data in y, and has slight undercoverage for
+missing data in x. Note that Table 3.3 in the first edition of this book
+presented incorrect information because it had erroneously imputed the
+data by norm instead of pmm.
+
+The traditional method does not work for a small number of predictors.
+Heitjan and Little (1991) report that for just two predictors the
+results were ``disastrous.'' The cause of the problem appears to be
+related to their use
+
+The method is robust against misspecification of the imputation model,
+yet performs as well as theoretically superior methods. In the context
+of missing covariate data, Marshall et al.~(2010a) concluded that
+predictive mean matching ``produced the least biased estimates and
+better model per- formance measures.''
+
+The method works best with large samples, and provides imputations that
+possess many characteristics of the complete data. Predictive mean
+matching cannot be used to extrapolate beyond the range of the data, or
+to interpolate within the range of the data if the data at the interior
+are sparse. Also, it may not perform well with small datasets. Bearing
+these points in mind, predictive mean matching is a great all-around
+method with exceptional properties.
+
+there are two reasons to move beyond the predictive distance used in PMM
+and investigate an alternative metric. Firstly, PMM requires users of
+curve matching to select a particular future time point to base the
+matches on (e.g.~14 months of age). In some cases, it may be difficult
+to choose this time point, especially when the `future' is more vaguely
+defined as a time interval.{[}4{]} Secondly, the predictive distance may
+make the matches look unconvincing. The trajectories of the selected
+donors may all be close to the prediction for the target child at 14
+months, but this does not imply that the histories are identical. After
+all, different profiles may lead to the same predicted value.
+
+Consequently, the curves of some of the matches may be quite far from
+the curve of the target child. Some users of curve matching feel that
+such discrepancies are undesirable, as these matches do not appear to be
+people-like-me.{[}4{]} It is useful to investigate these shortcomings
+not only for improving growth prediction but also for other applications
+of multiple imputation, such as patient recovery after an operation,
+prediction of longevity, and decision-making when more than one
+treatment is available. {[}3{]}
+
+\hypertarget{methods}{%
+\section{methods}\label{methods}}
+
+Therefore, the information of these children at a later age is
+available. The first step is to fit a linear regression model on the
+donor database. Then, this model is used to predict the values for all
+donors and for the target at a certain point in the future, for example
+at 14 months. Finally, the distance between the predicted value of each
+of the donors and the predicted value of the target is calculated, which
+is referred to as the predictive distance. A number of donors -- usually
+five - with the smallest predictive distance are selected as the best
+matches. Their growth curves are then plotted and point estimates can be
+calculated by averaging the measurements. The growth patterns of the
+matched children thus suggest how the target child might develop in the
+future.
+
+the practical implementation and use of curve matching can in theory be
+improved by combining the predictive distance with another distance
+measure, thus creating a ``blended distance'' measure. Such a blended
+metric would take into account historical similarity between the donors
+and the target. For example, when blending the predictive distance with
+the Mahalanobis distance, more weight is given to similarities between
+units in the full predictor space. This would theoretically lead to the
+selection of donors with profiles more similar to the target, and
+therefore to the selection of true people-like-me. The objective of this
+study is to implement such a blended distance measure and to investigate
+its properties, blend ratio, and the validity of its resulting
+inferences.
+
+So instead of using one predictive distance at particular future time
+point. we use multiple time; The PD is the distance between the
+predicted value of a donor and the predicted value of the target at a
+particular future time point. The MD is defined as the distance between
+two N dimensional points scaled by the variation in each component of
+the point.
+
+\hypertarget{headings-first-level}{%
+\section{Headings: first level}\label{headings-first-level}}
+
+as the profiles of the matched donors can substantially differ from the
+profile of the target. similarity between the curves of the donors and
+the target can be taken into account by combining the predictive
+distance with the Mahalanobis distance.
+
+. The results show that blending towards the Mahalanobis distance leads
+to worse performance in terms of bias, coverage, and predictive power.
+Simulation study II evaluates the blended metric in a setting where a
+single value is imputed. The results show that a property of blending is
+the bias-variance trade off. Giving more weight to the Mahalanobis
+distance leads to less variance in the imputations, but less accuracy as
+well.
+
+We used the following steps to train and test both PLM and LMM
+prediction approaches: (1) build the approach using the training data,
+(2) examine prediction performance and tune the approach using the
+training data (i.e., within-sample testing), and (3) test the accuracy
+and precision of each approach using the testing data (i.e.,
+out-of-sample testing). We compared performance of PLM and LMM
+predictions in terms of accuracy and precision across all individuals
+and all timepoints.
+
+When no more than 30\% of the whole training sample (i.e., 3000 samples)
+were used to build the models, all three personalized predictive models
+outperformed the corresponding traditional models, which were built on
+randomly selected training samples of the same size as the personalized
+models
+
+We applied a form of predictive mean matching to determine the relative
+weights for each matching variable using the following steps.28 First,
+we imputed a 365- day TUG value for each patient in the training dataset
+via the brokenstick package in R (because data were collected at
+irregular timepoints).29 Next, we created a linear model to estimate the
+imputed 365-day TUG value using our matching variables of interest We
+then used this linear model to estimate the 365-day TUG value for (a)
+each patient in the training dataset and (b) the index patient. Finally,
+the patients from the training dataset with the closest predicted
+365-day TUG value to the index patient were selected as matches; we used
+35 patient matches based on our previous work.12
+
+We modeled the observed TUG data from the matching patient records to
+form the index patient's predicted TUG recovery trajectory. We used
+Generalized Additive Models for Location, Scale, and Shape (GAMLSS) to
+flexibly model the median, variance, and skewness of TUG recovery from
+postoperative days 1-425.30 The GAMLSS model included a cubic spline
+smoother with 3 degrees of freedom for the location parameter and 1
+degree of freedom for the shape parameter.
+
+A previous study suggested that in personalized medicine, using patient
+similarity in data-driven analysis of patient cohorts will signifcantly
+assist physicians to make informed decisions and choose the most
+appropriate clinical trial
+
+(why it is reasonable and useful)
+
+\begin{itemize}
+\item
+  \textbf{what type of study}: The EPIC Observational Study is a
+  prospective, multicenter, observational longitudinal study
+\item
+  \textbf{multiple center}: The data was collected through the Cystic
+  Fibrosis Foundation Patient Registry (CFFPR)
+\item
+  \textbf{already in use}: The design of the EPIC study has been
+  previously reported {[}28,29{]}. Including 59 centers
+\item
+  \textbf{exclusive informations}: Include demographic and risk factor
+  data, respiratory cultures, clinical encounter information, and
+  clinical outcomes, such as bacterial infections or pulmonary
+  exacerbations
+\item
+  \textbf{what is the goal}:
+\item
+  \textbf{our goal}:
+\end{itemize}
+
+\hypertarget{subjects}{%
+\subsubsection{Subjects}\label{subjects}}
+
+\begin{itemize}
+\item
+  \textbf{check for time!!}: 1772 participants enrolled between
+  \emph{2004 and 2006}. The data cut-off for the current analysis was
+  \emph{December 2013}.
+\item
+  The enrolled children with a confirmed diagnosis of CF before the age
+  of 12 without exposure of \emph{Pseudomonas aeruginosa}
+\item
+  Based on either never infected or culture negative for at least 2
+  years); with respiratory cultures negative for \emph{Pseudomonas
+  aeruginosa}
+\item
+  Either no prior isolation of Pseudomonas aeruginosa, or at least a
+  two-year period with no isolation of P. aeruginosa (Treggiari et al.,
+  2009).
+\item
+  The beginning of follow-up was defined as an individual's earliest
+  registry entry or pulmonary exacerbation
+\item
+  a registry entry could have occurred before their enrollment in the
+  EPIC Observational Study
+\item
+  End of follow-up in the study was defined as a patient's latest CF
+  registry encounter or pulmonary exacerbation.
+\item
+  \textbf{sample size}: Of the \textbf{1772} children enrolled,
+  \textbf{76497} visit observations in the EPIC OBS study
+\item
+  we identified \textbf{1325} individuals with usable data
+\item
+  1325 for the final data analysis
+\item
+  \textbf{how many} missing or lost to-follow-up with time-varying
+  covariates and outcomes
+\item
+  \textbf{\%} had one survey record, \textbf{\%} had a second, and
+  \textbf{\%} had a third, and the remaining \textbf{\%} had
+  \textbf{\#th} surveys.
+\item
+  Total of \textbf{\# obs} in \textbf{\# subject} individuals were
+  identified after eliminating registration age over 5
+\item
+  Total of \textbf{\# obs} in \textbf{\# subject} individuals were
+  identified after eliminating follow up time less than 5 years
+\item
+  Total of \textbf{\# obs} in \textbf{\# subject} individuals were
+  identified after eliminating avaiable visit times less than 10
+\item
+  \textbf{testing/training}: randomly
+\end{itemize}
+
+\hypertarget{table1-information}{%
+\subsubsection{Table1 Information}\label{table1-information}}
+
+\begin{itemize}
+\item
+  half of the cohort was female (49\%)
+\item
+  most were Caucasian (95\%)
+\item
+  Our genotype of interest was defined by the number of confirmed
+  \(\Delta F508\) (\texttt{F508del}) mutations (\texttt{0}: without
+  mutation, \texttt{1}: with one allele mutated, or \texttt{2}: with
+  both alells mutated), where \texttt{0} included both those with both
+  alleles missing or those with unknown status with respect to this
+  mutation.
+\item
+  Homozygosity of \(\Delta F508\) (\(\Delta F508/\Delta F508\))
+\item
+  the most common CF-causing mutation (Cystic Fibrosis Foundation,
+
+  \begin{enumerate}
+  \def\labelenumi{\arabic{enumi})}
+  \setcounter{enumi}{2015}
+  \tightlist
+  \item
+    is associated with increased risk of infection and lower lung
+    function in CF (Rosenfeld et al., 2012, Sanders et al., 2010).
+  \end{enumerate}
+\item
+  the majority were F508del homozygous (\textbf{\%}),
+\item
+  the median weight percentile at enrollment was 36.7 \textbf{(IQR: )}.
+\item
+  The median age at enrollment was 5.8 \textbf{(IQR: )} years
+\item
+  median length of follow-up 7.8 \textbf{(IQR:)} years
+\end{itemize}
+
+\hypertarget{tools}{%
+\subsubsection{Tools}\label{tools}}
+
+the \textbf{brokenstick v 2.0.0} package. The package contains tools to
+fit the broken stick model to data, export the fitted model's
+parameters, create imputed values of the model, and predict broken stick
+estimates for new data.
+
+\hypertarget{brokenstick-model}{%
+\subsection{brokenstick model}\label{brokenstick-model}}
+
+Substantive researchers often favour repeated measures over the use of
+linear mixed models because of their simplicity.
+
+For example, we can easily fit a subject-level model to predict future
+outcomes conditional on earlier data with repeated measures data.
+
+While such simple regression models may be less efficient than modelling
+the complete data (Diggle, Heagerty, Liang, and Zeger 2002, Sec. 6.1),
+
+The broken stick model requires a specification of a sensible set of
+time points at which the measurements ideally should have been taken.
+
+\begin{itemize}
+\item
+  For each subject, the model predicts or imputes hypothetical
+  observations at those times
+\item
+  so the substantive analysis applies to the repeated measures instead
+  of the irregular data.
+\end{itemize}
+
+applications for brokenstick model:
+
+\begin{itemize}
+\tightlist
+\item
+  to approximate individual trajectories by a series of connected
+  straight lines; • to align irregularly observed curves to a joint age
+  grid;
+\item
+  to impute realisations of individual trajectories;
+\item
+  to estimate the time-to-time correlation matrix;
+\item
+  to predict future observations.
+\end{itemize}
+
+provide the examples:
+
+\begin{itemize}
+\item
+  the points are close to the scheduled ages (indicated by vertical
+  lines), especially in the first half-year.
+\item
+  bservation times vary more for older children.
+\item
+  several children have one or more missing visits.
+\item
+  some children had fairly close visits and vary periodically
+\item
+  special cases of dropped out after certain time
+\end{itemize}
+
+\hypertarget{people-like-me-methods}{%
+\subsection{people-like-me methods}\label{people-like-me-methods}}
+
+Assumptions:
+
+\begin{itemize}
+\item
+  The trajectory between break ages follows a strict linear functino.
+  This assumption may fail for processes that are convex or concave in
+  time. For example, human height growth in centimeters growth is
+  concave, so setting breakpoints far apart results introduces
+  systematic model bias. Modeling height SDS instead of raw height will
+  prevent this bias.
+\item
+  The broken stick estimates follow a joint multivariate normal
+  distribution. As this assumption may fail for skewed measurements, it
+  could be beneficial to transform the outcomes so that their
+  distribution will be closer to normal.
+\item
+  The data are Missing at Random (MAR) given the outcomes from all
+  subjects at all observation times. This assumption is restrictive in
+  the sense that missingness may only depend on the observed outcomes,
+  and not on covariates other than time.
+\end{itemize}
+
+At the same time, the assumption is liberal in the sense that the
+missingness may depend on future outcomes. While this MAR-future
+assumption is unusual in the literature on drop-out and observation time
+models, it is a sensible strategy for creating imputations that preserve
+relations over time, especially for intermittent missing data. Of
+course, the subsequent substantive analysis on the imputed data needs to
+be aware of the causal direction of time.
+
+\hypertarget{kr-fucntion}{%
+\subsubsection{KR fucntion???}\label{kr-fucntion}}
+
+The brokenstick package provides another alternative, the Kasim-
+Raudenbush (KR) sampler (Kasim and Raudenbush 1998). The method
+simulates draws from the posterior distributions of parameters from a
+two-level normal model with heterogeneous within-subject variances. The
+speed of the Kasim-Raudenbush sampler is almost insensitive to the
+number of random effects and depends primarily on the total number of
+iterations and somewhat on sample size.
+
+\hypertarget{discussion}{%
+\section{Discussion}\label{discussion}}
+
+\hypertarget{reference}{%
+\section{Reference}\label{reference}}
+
+\hypertarget{supplementary}{%
+\section{Supplementary}\label{supplementary}}
+
+\hypertarget{examples-of-citations-figures-tables-references}{%
+\section{Examples of citations, figures, tables,
+references}\label{examples-of-citations-figures-tables-references}}
+
+\label{sec:others}
+
+You can insert references. Here is some text (Kour and Saabne 2014b,
+2014a) and see Hadash et al. (2018).
+
+The documentation for \verb+natbib+ may be found at
+
+You can use custom blocks with LaTeX support from \textbf{rmarkdown} to
+create environment.
+
+\begin{center}
+\url{http://mirrors.ctan.org/macros/latex/contrib/natbib/natnotes.pdf\%7D}
+
+\end{center}
+
+Of note is the command \verb+\citet+, which produces citations
+appropriate for use in inline text.
+
+You can insert LaTeX environment directly too.
+
+\begin{verbatim}
+   \citet{hasselmo} investigated\dots
+\end{verbatim}
+
+produces
+
+\begin{quote}
+  Hasselmo, et al.\ (1995) investigated\dots
+\end{quote}
+
+\begin{center}
+  \url{https://www.ctan.org/pkg/booktabs}
+\end{center}
+
+\hypertarget{figures}{%
+\subsection{Figures}\label{figures}}
+
+You can insert figure using LaTeX directly.
+
+See Figure \ref{fig:fig1}. Here is how you add footnotes. {[}\^{}Sample
+of the first footnote.{]}
+
+\begin{figure}
+  \centering
+  \fbox{\rule[-.5cm]{4cm}{4cm} \rule[-.5cm]{4cm}{0cm}}
+  \caption{Sample figure caption.}
+  \label{fig:fig1}
+\end{figure}
+
+But you can also do that using R.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\FunctionTok{plot}\NormalTok{(mtcars}\SpecialCharTok{$}\NormalTok{mpg)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{figure}
+\centering
+\includegraphics{09_paper_files/figure-latex/fig2-1.pdf}
+\caption{Another sample figure}
+\end{figure}
+
+You can use \textbf{bookdown} to allow references for Tables and
+Figures.
+
+\hypertarget{tables}{%
+\subsection{Tables}\label{tables}}
+
+Below we can see how to use tables.
+
+See awesome Table\textasciitilde{}\ref{tab:table} which is written
+directly in LaTeX in source Rmd file.
+
+\begin{table}
+ \caption{Sample table title}
+  \centering
+  \begin{tabular}{lll}
+    \toprule
+    \multicolumn{2}{c}{Part}                   \\
+    \cmidrule(r){1-2}
+    Name     & Description     & Size ($\mu$m) \\
+    \midrule
+    Dendrite & Input terminal  & $\sim$100     \\
+    Axon     & Output terminal & $\sim$10      \\
+    Soma     & Cell body       & up to $10^6$  \\
+    \bottomrule
+  \end{tabular}
+  \label{tab:table}
+\end{table}
+
+You can also use R code for that.
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{knitr}\SpecialCharTok{::}\FunctionTok{kable}\NormalTok{(}\FunctionTok{head}\NormalTok{(mtcars), }\AttributeTok{caption =} \StringTok{"Head of mtcars table"}\NormalTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{longtable}[]{@{}
+  >{\raggedright\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.2609}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0725}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0580}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0725}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0580}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0725}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0870}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0870}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0435}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0435}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0725}}
+  >{\raggedleft\arraybackslash}p{(\columnwidth - 22\tabcolsep) * \real{0.0725}}@{}}
+\caption{Head of mtcars table}\tabularnewline
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+mpg
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+cyl
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+disp
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+hp
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+drat
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+wt
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+qsec
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+vs
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+am
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+gear
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+carb
+\end{minipage} \\
+\midrule()
+\endfirsthead
+\toprule()
+\begin{minipage}[b]{\linewidth}\raggedright
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+mpg
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+cyl
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+disp
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+hp
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+drat
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+wt
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+qsec
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+vs
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+am
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+gear
+\end{minipage} & \begin{minipage}[b]{\linewidth}\raggedleft
+carb
+\end{minipage} \\
+\midrule()
+\endhead
+Mazda RX4 & 21.0 & 6 & 160 & 110 & 3.90 & 2.620 & 16.46 & 0 & 1 & 4 &
+4 \\
+Mazda RX4 Wag & 21.0 & 6 & 160 & 110 & 3.90 & 2.875 & 17.02 & 0 & 1 & 4
+& 4 \\
+Datsun 710 & 22.8 & 4 & 108 & 93 & 3.85 & 2.320 & 18.61 & 1 & 1 & 4 &
+1 \\
+Hornet 4 Drive & 21.4 & 6 & 258 & 110 & 3.08 & 3.215 & 19.44 & 1 & 0 & 3
+& 1 \\
+Hornet Sportabout & 18.7 & 8 & 360 & 175 & 3.15 & 3.440 & 17.02 & 0 & 0
+& 3 & 2 \\
+Valiant & 18.1 & 6 & 225 & 105 & 2.76 & 3.460 & 20.22 & 1 & 0 & 3 & 1 \\
+\bottomrule()
+\end{longtable}
+
+\hypertarget{lists}{%
+\subsection{Lists}\label{lists}}
+
+\begin{itemize}
+\tightlist
+\item
+  Item 1
+\item
+  Item 2
+\item
+  Item 3
+\end{itemize}
+
+\hypertarget{refs}{}
+\begin{CSLReferences}{1}{0}
+\leavevmode\vadjust pre{\hypertarget{ref-hadash2018estimate}{}}%
+Hadash, Guy, Einat Kermany, Boaz Carmeli, Ofer Lavi, George Kour, and
+Alon Jacovi. 2018. {``Estimate and Replace: A Novel Approach to
+Integrating Deep Neural Networks with Existing Applications.''}
+\emph{arXiv Preprint arXiv:1804.09028}.
+
+\leavevmode\vadjust pre{\hypertarget{ref-kour2014fast}{}}%
+Kour, George, and Raid Saabne. 2014a. {``Fast Classification of
+Handwritten on-Line Arabic Characters.''} In \emph{Soft Computing and
+Pattern Recognition (SoCPaR), 2014 6th International Conference of},
+312--18. IEEE.
+
+\leavevmode\vadjust pre{\hypertarget{ref-kour2014real}{}}%
+---------. 2014b. {``Real-Time Segmentation of on-Line Handwritten
+Arabic Script.''} In \emph{Frontiers in Handwriting Recognition (ICFHR),
+2014 14th International Conference on}, 417--22. IEEE.
+
+\end{CSLReferences}
+
+\bibliographystyle{unsrt}
+\bibliography{references.bib}
+
+
+\end{document}

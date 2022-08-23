@@ -1,4 +1,15 @@
 ## 3.1 generate spline {{{------------------------------------------------------
+#' Title
+#'
+#' @param x
+#' @param knots
+#' @param degree
+#' @param theta
+#'
+#' @return
+#' @export
+#'
+#' @examples
 gen_spline <- function(x, knots, degree, theta) {
   basis <- bs(x = x,
               knots = knots,
@@ -18,6 +29,14 @@ gen_spline <- function(x, knots, degree, theta) {
 
 
 ## 3.2 plot spline basis {{{----------------------------------------------------
+#' Title
+#'
+#' @param basisdata
+#'
+#' @return
+#' @export
+#'
+#' @examples
 plot_basis <- function(basisdata) {
   dtbasis <- as.data.table(basisdata$basis)
   dtbasis[, x := seq(0, 1, length.out = .N)]
@@ -40,6 +59,15 @@ plot_basis <- function(basisdata) {
 
 
 ## 3.3 plot spline {{{----------------------------------------------------------
+#' Title
+#'
+#' @param basisdata
+#' @param points
+#'
+#' @return
+#' @export
+#'
+#' @examples
 plot_spline <- function(basisdata, points = FALSE) {
   p <- ggplot(data = basisdata$dt)
 
@@ -56,6 +84,18 @@ plot_spline <- function(basisdata, points = FALSE) {
 
 
 ## 3.4 generate individual random effect {{{------------------------------------
+#' Title
+#'
+#' @param subset
+#' @param knots
+#' @param degree
+#' @param sigma
+#' @param vcov
+#'
+#' @return
+#' @export
+#'
+#' @examples
 gen_ind_ranef <- function(subset,
                           knots = c(10, 12, 15),
                           degree = 3,
@@ -79,6 +119,20 @@ gen_ind_ranef <- function(subset,
 ## }}}--------------------------------------------------------------------------
 
 ## 3.5 generate all random effect {{{-------------------------------------------
+#' Title
+#'
+#' @param fullset
+#' @param id
+#' @param knots
+#' @param degree
+#' @param sigma
+#' @param vcov
+#' @param seed
+#'
+#' @return
+#' @export
+#'
+#' @examples
 gen_all_ranef <- function(fullset = margin_mean,
                           id = "id",
                           knots = c(10, 12, 15),
@@ -109,6 +163,14 @@ gen_all_ranef <- function(fullset = margin_mean,
 
 
 ## 3.6 training and testing {{{-------------------------------------------------
+#' Title
+#'
+#' @param dataset
+#'
+#' @return
+#' @export
+#'
+#' @examples
 save_dataset <- function(dataset) {
 
   train_id <- unique(dataset$id) %>%
