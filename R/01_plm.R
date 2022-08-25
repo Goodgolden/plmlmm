@@ -330,7 +330,7 @@ pred_matching <- function(lb_data = lb_data,
                   observation = ind_time,
                   title = unique(ind_time$id))
    } else {
-     predict_plot <- NULL
+     plm_plot <- NULL
    }
 
 
