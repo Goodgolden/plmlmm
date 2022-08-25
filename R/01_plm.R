@@ -180,6 +180,7 @@ linear_brokenstick <-
 
 pred_matching <- function(lb_data = lb_data,
                           obs_data = train,
+                          test_data = NULL
                           match_methods = c("mahalanobis", "euclidean", "single"),
                           match_num = NULL,
                           match_alpha = NULL,
@@ -264,7 +265,7 @@ pred_matching <- function(lb_data = lb_data,
 
     cat("\n plotting matching paired individual trajectories \n")
   } else {
-    matching_plot = NULL
+    matching_plot = "no matching plot"
   }
 
 
@@ -326,7 +327,7 @@ pred_matching <- function(lb_data = lb_data,
                   observation = ind_time,
                   title = unique(ind_time$id))
    } else {
-     plm_plot <- NULL
+     plm_plot <- "no centiles"
    }
 
 
