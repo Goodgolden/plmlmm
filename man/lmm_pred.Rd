@@ -4,10 +4,10 @@
 \alias{lmm_pred}
 \title{Title}
 \usage{
-lmm_pred(fitting, test_baseline, alpha)
+lmm_pred(fitting, test_baseline)
 }
 \arguments{
-\item{alpha}{}
+\item{baseline}{}
 }
 \description{
 Title

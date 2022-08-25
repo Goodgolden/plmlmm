@@ -1,6 +1,5 @@
 ## 1.1 brokenstick prediction {{{-----------------------------------------------
-#' Title Broken
-#'
+#' Title Broken stick model
 #' @param outcome
 #' @param time
 #' @param id
@@ -13,6 +12,8 @@
 #' @export
 #'
 #' @examples
+#'
+
 brokenstick_prediction <-
   function(outcome = "ht",
            time = "time",
@@ -32,7 +33,6 @@ brokenstick_prediction <-
   #   dplyr::select(eval(id),
   #                 eval(lmm_var)) %>%
   #   unique()
-
 
   formula <- paste0(outcome, "~", time, "|", id)
   bks <- brokenstick::brokenstick(formula = as.formula(formula),
@@ -63,7 +63,6 @@ brokenstick_prediction <-
                               x = pred_time,
                               group = newdata$id,
                               ids = newdata$id)
-    browser() ##-------------------------------------------------------------------
 
     dataset_knots <-
       bks_pred_knots %>%
@@ -123,18 +122,17 @@ brokenstick_prediction <-
     }
   }
 
-
+## }}}--------------------------------------------------------------------------
 
 ## 1.2 linear fitting {{{-------------------------------------------------------
-#' Title
+#' Title multivariate linear model
 #'
 #' @param lm_formula
 #' @param bks_pred
 #'
 #' @return
 #' @export
-#'
-#' @examples
+
 linear_brokenstick <-
   function(lm_formula = "`.pred` ~ time * sex + baseline",
            bks_pred) {
@@ -163,8 +161,7 @@ linear_brokenstick <-
 
 
 ## 1.3 prediction matching {{{--------------------------------------------------
-
-#' Title
+#' Title prediction matching
 #'
 #' @param lb_data
 #' @param obs_data
@@ -180,8 +177,7 @@ linear_brokenstick <-
 #'
 #' @return
 #' @export
-#'
-#' @examples
+
 pred_matching <- function(lb_data = lb_data,
                           obs_data = train,
                           match_methods = c("mahalanobis", "euclidean", "single"),
@@ -345,7 +341,7 @@ pred_matching <- function(lb_data = lb_data,
 
 
 ## 1.4 individual people-like-me matching plot {{{------------------------------
-#' Title
+#' Title plot individual matching
 #'
 #' @param quantile
 #' @param observation
@@ -353,8 +349,6 @@ pred_matching <- function(lb_data = lb_data,
 #'
 #' @return
 #' @export
-#'
-#' @examples
 plm_ind_plot <- function(quantile,
                          observation,
                          title = NULL) {
@@ -401,3 +395,4 @@ plm_ind_plot <- function(quantile,
   # print(range(observation$time))
   plot
 }
+## }}}--------------------------------------------------------------------------
