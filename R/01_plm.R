@@ -72,10 +72,21 @@ brokenstick_prediction <-
       # dplyr::select(target = as.character(match_time),
       #               everything()) %>%
       full_join(newdata, by = "id") %>%
-      mutate(timef = paste0("time", time.x))
-    # pivot_wider(names_from = time,
+      transmute(.source = .source,
+                id = id,
+                time = time.x,
+                .pred = .pred,
+                time = time.x,
+                baseline = ht,
+                sex = sex,
+                .fixed = .fixed,
+                varibility = varibility,
+                group = group,
+                timef = paste0("time", time.x)
+             )
+    # pivot_wider(names_from = time,,
     #             values_from = .pred)
-
+names(bks_pred)
     return(dataset_knots)
   }
 
@@ -136,12 +147,16 @@ brokenstick_prediction <-
 linear_brokenstick <-
   function(lm_formula = "`.pred` ~ time * sex + baseline",
            bks_pred) {
+
+    # bks_pred = test_pred
     lm_bks<- lm(as.formula(lm_formula),
                 data = bks_pred)
 
+    predicted <- predict(lm_bks, newdata = bks_pred)
+
     lb_data <- bks_pred %>%
-      mutate(lm_bks_target = predict(lm_bks,
-                                     newdata = .)) %>%
+      ungroup() %>%
+      mutate(lm_bks_target = predicted) %>%
       dplyr::select(lm_bks_target) %>%
       cbind(bks_pred) %>%
       dplyr::select("id", time, contains("lm_bks_target")) %>%
@@ -178,9 +193,10 @@ linear_brokenstick <-
 #' @return
 #' @export
 
-pred_matching <- function(lb_data = lb_data,
-                          lb_test = lb_data,
-                          obs_data = train,
+pred_matching <- function(lb_data,
+                          lb_test,
+                          train_data,
+                          test_data,
                           match_methods = c("mahalanobis", "euclidean", "single"),
                           match_num = NULL,
                           match_alpha = NULL,
@@ -190,6 +206,7 @@ pred_matching <- function(lb_data = lb_data,
                           match_plot = FALSE,
                           predict_plot = FALSE,
                           sbj) {
+
   if (is.null(match_num) & is.null(match_alpha)) {
     stop("provide matching number or critical values for PLM methods")
   }
@@ -201,12 +218,12 @@ pred_matching <- function(lb_data = lb_data,
   subject <- lb_test %>%
     dplyr::filter(id == sbj)
 
-  ind_time <- obs_data %>%
+  ind_time <- test_data %>%
     dplyr::filter(id == sbj)
 
   ## the matching subset
   lb_sub <- lb_data %>%
-    transmute(id = id,
+    transmute(id = as.character(id),
               ## more time points for matching
               ## adding the correlation
               time = time,
@@ -221,7 +238,7 @@ pred_matching <- function(lb_data = lb_data,
   if (match_methods == "euclidean") {
     matching <<- euclidean_n(Dmatrix = lb_sub,
                             match_num = match_num) %>%
-      inner_join(obs_data, by = "id")
+      inner_join(train_data, by = "id")
     cat("\n using euclidean distance \n")
     }
 
@@ -229,13 +246,13 @@ pred_matching <- function(lb_data = lb_data,
     if (!is.null(match_num)) {
       matching <<- mahalanobis_n(Dmatrix = lb_sub,
                                 match_num = match_num) %>%
-            inner_join(obs_data, by = "id")
+            inner_join(train_data, by = "id")
       cat("\n using mahalanobis distance with matching number \n")}
 
     if (!is.null(match_alpha)) {
       matching <<- mahalanobis_p(Dmatrix = lb_sub,
                                  alpha = match_alpha) %>%
-          inner_join(obs_data, by = "id")
+          inner_join(train_data, by = "id")
       cat("\n using mahalanobis distance with F test p value \n")}
   }
 
@@ -243,7 +260,7 @@ pred_matching <- function(lb_data = lb_data,
     matching <<- singletime_n(Dmatrix = lb_sub,
                              match_time = match_time,
                              match_num = match_num) %>%
-      inner_join(obs_data, by = "id")
+      inner_join(train_data, by = "id")
 
     cat("\n using single critical time point matching \n")
     }
@@ -265,7 +282,7 @@ pred_matching <- function(lb_data = lb_data,
 
     cat("\n plotting matching paired individual trajectories \n")
   } else {
-    matching_plot = "no matching plot"
+    matching_plot = NULL
   }
 
 
@@ -327,7 +344,7 @@ pred_matching <- function(lb_data = lb_data,
                   observation = ind_time,
                   title = unique(ind_time$id))
    } else {
-     plm_plot <- "no centiles"
+     plm_plot <- NULL
    }
 
 
