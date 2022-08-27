@@ -1,0 +1,31 @@
+---
+title: "06_summary"
+output: html_document
+date: "2022-08-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+load("Z:/plmlmm/package/plmlmm_simulation_output_eld_dataset1_results_20220824.Rdata")
+load("Z:/plmlmm/package/plmlmm_simulation_output_mhln_dataset1_results_20220824.Rdata")
+
+eld_obs_cvg50 <- unlist(output_eld, recursive = FALSE) %>%
+  map("centiles_observed") %>% 
+  map("bias") %>% 
+  map(~mean(., na.rm = TRUE)) %>%
+  unlist() %>% mean()
+
+mhln_obs_cvg50 <- unlist(output_mhln, recursive = FALSE) %>%
+  map("centiles_observed") %>%
+  map("coverage95") %>% 
+  map(~mean(., na.rm = TRUE)) %>%
+  unlist() %>% mean()
+
+eld_obs_cvg50
+mhln_obs_cvg50
+```
+
