@@ -179,8 +179,8 @@ linear_brokenstick <-
 #' @export
 
 pred_matching <- function(lb_data = lb_data,
+                          lb_test = lb_data,
                           obs_data = train,
-                          test_data = NULL,
                           match_methods = c("mahalanobis", "euclidean", "single"),
                           match_num = NULL,
                           match_alpha = NULL,
@@ -198,7 +198,7 @@ pred_matching <- function(lb_data = lb_data,
     stop("provide either matching number or critical values for PLM methods, not both")
   }
 
-  subject <- lb_data %>%
+  subject <- lb_test %>%
     dplyr::filter(id == sbj)
 
   ind_time <- obs_data %>%
