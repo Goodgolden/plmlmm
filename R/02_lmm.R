@@ -56,20 +56,20 @@ lmm_pred <- function(train_data,
     seed = 555)
 
   lmm_results <-
-    dplyr::select(lmmpred_05,
+    dplyr::select(lmmpred_50,
                   id, time,
                   # observed = ht,
                   pred,
                   centile25 = low,
                   centile75 = upp) %>%
-    full_join(dplyr::select(lmmpred_09,
+    full_join(dplyr::select(lmmpred_90,
                             id, time,
                             # observed = ht,
                             pred,
-                            centile05 = low,
+                            centile50 = low,
                             centile95 = upp),
               by = c("id", "time", "pred")) %>%
-    full_join(dplyr::select(lmmpred_095,
+    full_join(dplyr::select(lmmpred_95,
                             id, time,
                             # observed = ht,
                             pred,

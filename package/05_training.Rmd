@@ -228,12 +228,6 @@ timeb - timea
 
 
 ```{r}
-# detectCores()
-# myCluster <- makeCluster(20, # number of cores to use
-#                          type = "PSOCK") # type of cluster
-# 
-# registerDoParallel(myCluster)
-
 detectCores()
 myCluster <- makeCluster(20, # number of cores to use
                          type = "PSOCK") # type of cluster
@@ -242,21 +236,16 @@ timea <- Sys.time()
 output_lmm <- foreach(i = 1:20, 
                   .export = ls(globalenv()), 
                   .packages = "plmlmm") %dopar% {
-    
-                  i = 1
-    .GlobalEnv$simulation_20 <- simulation_20
-    `%!in%` <- Negate(`%in%`)
-    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
-  
-    train_baseline <- train_data %>% 
-      group_by("id") %>%
-      slice(1L)
-  
-    lmm_results <- lmm_pred(train_data, )
-      
-                                    
-        
-     lmm_results               
+                    .GlobalEnv$simulation_20 <- simulation_20
+                    `%!in%` <- Negate(`%in%`)
+                    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
+                  
+                    train_baseline <- train_data %>% 
+                      group_by(id) %>%
+                      slice(1L)
+                  
+                    lmm_results <- lmm_pred(train_data, train_baseline)
+                    lmm_results               
                   }
 save(output_lmm, file = "plmlmm_simulation_lmm_dataset1_results_20220824.Rdata")
 stopCluster(myCluster)
