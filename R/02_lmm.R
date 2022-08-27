@@ -11,6 +11,7 @@
 lmm_pred <- function(train_data,
                      baseline) {
 
+  baseline <- train_baseline
 
   ctrl <- lmeControl(opt = 'optim')
   fitting <-  lme(ht ~ bs(time, knots = c(10, 12, 15), degree = 3) * sex - 1,
@@ -75,7 +76,7 @@ lmm_pred <- function(train_data,
                             pred,
                             centile025 = low,
                             centile975 = upp),
-              by = c("id", "time", "pred"))
+              by = c("id", "time", "pred")) %>%
   na.omit()
 
   return(lmm_results)
