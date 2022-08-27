@@ -38,7 +38,7 @@ lmm_pred <- function(train_data,
     # times = time_vec,
     all_times = TRUE,
     return_data = TRUE,
-    level = 0.5,
+    level = 0.90,
     interval = "prediction",
     seed = 555)
 
