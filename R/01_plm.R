@@ -34,6 +34,7 @@ brokenstick_prediction <-
   #                 eval(lmm_var)) %>%
   #   unique()
 
+    browser()
   formula <- paste0(outcome, "~", time, "|", id)
   bks <- brokenstick::brokenstick(formula = as.formula(formula),
                                   data = train_data,
@@ -86,7 +87,6 @@ brokenstick_prediction <-
              )
     # pivot_wider(names_from = time,,
     #             values_from = .pred)
-names(bks_pred)
     return(dataset_knots)
   }
 
@@ -149,7 +149,7 @@ linear_brokenstick <-
            bks_pred) {
 
     # bks_pred = test_pred
-    lm_bks<- lm(as.formula(lm_formula),
+    lm_bks <- lm(as.formula(lm_formula),
                 data = bks_pred)
 
     predicted <- predict(lm_bks, newdata = bks_pred)
