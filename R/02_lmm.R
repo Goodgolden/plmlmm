@@ -12,6 +12,7 @@ lmm_pred <- function(train_data,
                      baseline) {
 
 
+  ctrl <- lmeControl(opt = 'optim')
   fitting <-  lme(ht ~ bs(time, knots = c(10, 12, 15), degree = 3) * sex - 1,
                   random = ~ 1 + bs(time, df = 5, degree = 2, intercept = FALSE)| id,
                   control = ctrl,
