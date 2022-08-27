@@ -180,6 +180,7 @@ linear_brokenstick <-
 
 pred_matching <- function(lb_data = lb_data,
                           obs_data = train,
+                          test_data = NULL,
                           match_methods = c("mahalanobis", "euclidean", "single"),
                           match_num = NULL,
                           match_alpha = NULL,
