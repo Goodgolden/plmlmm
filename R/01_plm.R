@@ -34,7 +34,6 @@ brokenstick_prediction <-
   #                 eval(lmm_var)) %>%
   #   unique()
 
-    browser()
   formula <- paste0(outcome, "~", time, "|", id)
   bks <- brokenstick::brokenstick(formula = as.formula(formula),
                                   data = train_data,
@@ -214,6 +213,8 @@ pred_matching <- function(lb_data,
   if (!is.null(match_num) & !is.null(match_alpha)) {
     stop("provide either matching number or critical values for PLM methods, not both")
   }
+
+  browser()
 
   subject <- lb_test %>%
     dplyr::filter(id == sbj)

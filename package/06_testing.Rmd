@@ -48,7 +48,7 @@ test_eld <- foreach(i = 1:20,
         choice = "predicted")
     
     test_pred <-
-     brokenstick_prediction(
+     plmlmm::brokenstick_prediction(
         outcome = "ht",
         time = "time",
         id = "id",
@@ -84,7 +84,241 @@ test_eld <- foreach(i = 1:20,
    eld_n10
                   }
 save(test_eld, file = "plmlmm_test_simulation_eld_n10_results_20220827.Rdata")
-remove(output_eld)
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+```
+
+
+
+
+
+```{r}
+detectCores()
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
+test_mhln <- foreach(i = 1:20,
+                  .export = ls(globalenv()),
+                  .packages = c("plmlmm", "brokenstick")) %dopar% {
+
+    .GlobalEnv$simulation_20 <- simulation_20
+    `%!in%` <- Negate(`%in%`)
+    
+    ## dataset for training and testing
+    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
+    test_data <- dplyr::filter(simulation_20[[i]], group == "testing")
+    test_baseline <- test_data %>% group_by(id) %>% slice(1L)
+    # View(test_baseline)
+    
+    id_train <- unique(train_data$id)
+    id_test <- unique(test_data$id)
+    
+    train_pred <-
+     plmlmm::brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        choice = "predicted")
+    
+    test_pred <-
+     plmlmm::brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        newdata = test_baseline,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        choice = "testing")
+    
+    lb_train <-
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = train_pred)
+
+    lb_test <- 
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = test_pred)
+    
+    mhl_n10 <- map(id_test,
+                   ~plmlmm::pred_matching(
+                     lb_data = lb_train,
+                     lb_test = lb_test,
+                     test_data = test_data,
+                     train_data = train_data,
+                     match_methods = "mahalanobis",
+                     match_num = 10,
+                     gamlss_formula = "ht ~ cs(time, df = 3)",
+                     gamsigma_formula = "~ cs(time, df = 1)",
+                     match_plot = FALSE,
+                     predict_plot = FALSE,
+                     sbj = .))
+
+   mhl_n10}
+
+save(test_mhln, file = "plmlmm_test_simulation_mhl_n10_results_20220827.Rdata")
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+```
+
+
+```{r}
+detectCores()
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
+test_mhlp <- foreach(i = 1:20,
+                  .export = ls(globalenv()),
+                  .packages = c("plmlmm", "brokenstick")) %dopar% {
+
+    .GlobalEnv$simulation_20 <- simulation_20
+    `%!in%` <- Negate(`%in%`)
+    
+    ## dataset for training and testing
+    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
+    test_data <- dplyr::filter(simulation_20[[i]], group == "testing")
+    test_baseline <- test_data %>% group_by(id) %>% slice(1L)
+    # View(test_baseline)
+    
+    id_train <- unique(train_data$id)
+    id_test <- unique(test_data$id)
+    
+    
+    train_pred <-
+     brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        choice = "predicted")
+    
+    test_pred <-
+     plmlmm::brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        newdata = test_baseline,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        choice = "testing")
+    
+    lb_train <-
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = train_pred)
+
+    lb_test <- 
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = test_pred)
+    
+    # View(lb_train)
+    # View(lb_test)
+    
+    mhl_p05 <- map(id_test,
+                   ~try(pred_matching(
+                     lb_data = lb_train,
+                     lb_test = lb_test,
+                     test_data = test_data,
+                     train_data = train_data,
+                     match_methods = "mahalanobis",
+                     match_alpha = 0.05,
+                     gamlss_formula = "ht ~ cs(time, df = 3)",
+                     gamsigma_formula = "~ cs(time, df = 1)",
+                     match_plot = TRUE,
+                     predict_plot = TRUE,
+                     sbj = .)))
+   mhl_p05
+   }
+save(test_mhlp, file = "plmlmm_test_simulation_mhl_p07_results_20220827.Rdata")
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+```
+
+
+```{r}
+detectCores()
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
+test_sgl <- foreach(i = 1:20,
+                  .export = ls(globalenv()),
+                  .packages = c("plmlmm", "brokenstick")) %dopar% {
+
+    .GlobalEnv$simulation_20 <- simulation_20
+    `%!in%` <- Negate(`%in%`)
+    
+    ## dataset for training and testing
+    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
+    test_data <- dplyr::filter(simulation_20[[i]], group == "testing")
+    test_baseline <- test_data %>% group_by(id) %>% slice(1L)
+    # View(test_baseline)
+    
+    id_train <- unique(train_data$id)
+    id_test <- unique(test_data$id)
+    
+    train_pred <-
+     plmlmm::brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        choice = "predicted")
+    
+    test_pred <-
+     plmlmm::brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        newdata = test_baseline,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        choice = "testing")
+    
+    lb_train <-
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = train_pred)
+
+    lb_test <- 
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = test_pred)
+    
+    sgl10_n10 <- map(id_test,
+                   ~plmlmm::pred_matching(
+                     lb_data = lb_train,
+                     lb_test = lb_test,
+                     test_data = test_data,
+                     train_data = train_data,
+                       match_methods = "single",
+                       match_num = 10,
+                       match_time = 10,
+                       match_alpha = NULL,
+                       gamlss_formula = "ht ~ cs(time, df = 3)",
+                       gamsigma_formula = "~ cs(time, df = 1)",
+                       match_plot = FALSE,      
+                       predict_plot = FALSE,
+                       sbj = .))
+   sgl10_n10}
+
+save(test_sgl, file = "plmlmm_test_simulation_sgl10_n10_results_20220827.Rdata")
 stopCluster(myCluster)
 timeb <- Sys.time()
 timeb - timea

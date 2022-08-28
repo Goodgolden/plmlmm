@@ -17,7 +17,8 @@ eld_obs_cvg50 <- unlist(output_eld, recursive = FALSE) %>%
   map("centiles_observed") %>% 
   map("bias") %>% 
   map(~mean(., na.rm = TRUE)) %>%
-  unlist() %>% mean()
+  unlist() %>% 
+  mean()
 
 mhln_obs_cvg50 <- unlist(output_mhln, recursive = FALSE) %>%
   map("centiles_observed") %>%
