@@ -214,7 +214,6 @@ pred_matching <- function(lb_data,
     stop("provide either matching number or critical values for PLM methods, not both")
   }
 
-  browser()
 
   subject <- lb_test %>%
     dplyr::filter(id == sbj)
@@ -249,6 +248,8 @@ pred_matching <- function(lb_data,
                                 match_num = match_num) %>%
             inner_join(train_data, by = "id")
       cat("\n using mahalanobis distance with matching number \n")}
+
+  # Sun Aug 28 00:11:37 2022 ------------------------------
 
     if (!is.null(match_alpha)) {
       matching <<- mahalanobis_p(Dmatrix = lb_sub,
