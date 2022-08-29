@@ -11,7 +11,8 @@
 lmm_pred <- function(fitting,
                      test_baseline) {
 
-  lmmpred_09 <- IndvPred_lme(
+
+  lmmpred_95 <- IndvPred_lme(
     lmeObject = fitting,
     newdata = baseline,
     timeVar = "time",
@@ -19,12 +20,9 @@ lmm_pred <- function(fitting,
     # times = time_vec,
     all_times = TRUE,
     return_data = TRUE,
-    level = 0.9,
+    level = 0.95,
     interval = "prediction",
     seed = 555)
-
-
-
   lmmpred_05 <- IndvPred_lme(
     lmeObject = fitting,
     newdata = baseline,
@@ -51,6 +49,13 @@ lmm_pred <- function(fitting,
                             centile05 = low,
                             centile95 = upp),
               by = c("id", "time", "pred")) %>%
+    full_join(dplyr::select(lmmpred_095,
+                            id, time,
+                            # observed = ht,
+                            pred,
+                            centile025 = low,
+                            centile975 = upp),
+              by = c("id", "time", "pred"))
     na.omit()
 
   return(lmm_results)

@@ -6,14 +6,13 @@ library(tidyverse)
 library(doParallel)
 library(foreach)
 library(tictoc)
-
 # devtools::install_github("Goodgolden/plmlmm", foce = TRUE)
-
 library(plmlmm)
 # devtools::load_all()
 # simulation_20 <- simulation_20[1:20]
 # save(simulation_20, file = "plmlmm_simulation_20_dataset_20220824.Rdata")
-load("Z:/plmlmm/package/plmlmm_simulation_20_dataset_20220824.Rdata")
+load("plmlmm_simulation_20_dataset_20220824.Rdata")
+detectCores()
 ```
 
 
@@ -21,14 +20,11 @@ load("Z:/plmlmm/package/plmlmm_simulation_20_dataset_20220824.Rdata")
 detectCores()
 myCluster <- makeCluster(20, # number of cores to use
                          type = "PSOCK") # type of cluster
-
 registerDoParallel(myCluster)
-
 timea <- Sys.time()
-
 output_eld <- foreach(i = 1:20,
                   .export = ls(globalenv()),
-                  .packages = c("plmlmm", "tidyverse", "gamlss", "brokenstick")) %dopar% {
+                  .packages = "plmlmm") %dopar% {
 
     .GlobalEnv$simulation_20 <- simulation_20
     `%!in%` <- Negate(`%in%`)
@@ -71,18 +67,14 @@ timeb - timea
 
 
 ```{r}
-
 detectCores()
 myCluster <- makeCluster(20, # number of cores to use
                          type = "PSOCK") # type of cluster
-
 registerDoParallel(myCluster)
 timea <- Sys.time()
 output_mhlp <- foreach(i = 1:20, 
                   .export = ls(globalenv()), 
-                  .packages = c("plmlmm", "tidyverse", "gamlss", "brokenstick")) %dopar% {
-  
-  
+                  .packages = "plmlmm") %dopar% {
     .GlobalEnv$simulation_20 <- simulation_20
     `%!in%` <- Negate(`%in%`)
     train_data <- dplyr::filter(simulation_20[[i]], group == "training")
@@ -122,7 +114,6 @@ timeb - timea
 ```
 
 
-
 ```{r}
 detectCores()
 myCluster <- makeCluster(20, # number of cores to use
@@ -133,16 +124,11 @@ registerDoParallel(myCluster)
 timea <- Sys.time()
 output_mhln <- foreach(i = 1:20, 
                   .export = ls(globalenv()), 
-                  .packages = c("plmlmm", "tidyverse", "gamlss", "brokenstick")) %dopar% {
-  
-  
+                  .packages = "plmlmm") %dopar% {
     .GlobalEnv$simulation_20 <- simulation_20
     `%!in%` <- Negate(`%in%`)
-    
     train_data <- dplyr::filter(simulation_20[[i]], group == "training")
     id_train <- unique(train_data$id)
-
-    
     bks_pred <- 
      plmlmm::brokenstick_prediction(
         outcome = "ht",
@@ -153,14 +139,10 @@ output_mhln <- foreach(i = 1:20,
         pred_time = c(2, 4, 6, 8, 10, 12),
         # newdata = test_baseline,
         choice = "predicted")
-    
     lb_data <- 
       plmlmm::linear_brokenstick(
         lm_formula = "`.pred` ~ time * sex + baseline",
         bks_pred = bks_pred)
-
-
-
     mhl_n10 <-   map(id_train,
                         ~plmlmm::pred_matching(
                           lb_data = lb_data,
@@ -185,15 +167,13 @@ timeb - timea
 
 ```{r}
 detectCores()
-myCluster <- makeCluster(20, # number of cores to use
+myCluster <- makeCluster(5, # number of cores to use
                          type = "PSOCK") # type of cluster
-
 registerDoParallel(myCluster)
-
 timea <- Sys.time()
 output_sgl10_n10 <- foreach(i = 1:20, 
                   .export = ls(globalenv()), 
-                  .packages = c("plmlmm", "tidyverse", "gamlss", "brokenstick")) %dopar% {
+                  .packages = "plmlmm") %dopar% {
     .GlobalEnv$simulation_20 <- simulation_20
     `%!in%` <- Negate(`%in%`)
     train_data <- dplyr::filter(simulation_20[[i]], group == "training")
@@ -212,7 +192,6 @@ output_sgl10_n10 <- foreach(i = 1:20,
       plmlmm::linear_brokenstick(
         lm_formula = "`.pred` ~ time * sex + baseline",
         bks_pred = bks_pred)
-
     sgl10_n10 <-   map(id_train,
                         ~plmlmm::pred_matching(
                           lb_data = lb_data,
@@ -226,11 +205,22 @@ output_sgl10_n10 <- foreach(i = 1:20,
                           match_plot = FALSE,
                           predict_plot = FALSE,
                           sbj = .))
-   sgl10_n10
-                  }
-
-save(output_sgl10_n10, file = "plmlmm_simulation_output_sgl_dataset1_results_20220824.Rdata")
+   sgl10_n10}
+save(output_sgl10_n10, 
+     file = "plmlmm_simulation_output_sgl_dataset1_results_20220824.Rdata")
 remove(output_sgl10_n10)
 stopCluster(myCluster)
 timeb <- Sys.time()
 timeb - timea
+```
+
+
+
+
+
+
+
+
+
+
+
