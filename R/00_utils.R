@@ -115,12 +115,14 @@ not_any_na <- function(x) {
 #' @examples
 mahalanobis_p <- function(Dmatrix,
                          alpha) {
+
   def <- nrow(Dmatrix)
-  matching <<- Dmatrix %>%
+  df <- Dmatrix %>%
     ## Mahalanobis distance using the chisq pvalues
     as.matrix() %>%
-    t() %>%
-    mahalanobis(0, cov(.)) %>%
+    t()
+
+  matching <<- mahalanobis(df, colMeans(df), cov(df)) %>%
     # mahalanobis(colMeans(.), cov(.)) %>%
     as.data.frame() %>%
     mutate(pvalue = pchisq(., df = def, lower.tail = FALSE)) %>%
@@ -152,7 +154,7 @@ mahalanobis_n <- function(Dmatrix,
   matching <<- Dmatrix %>%
     as.matrix() %>%
     t() %>%
-    mahalanobis(0, cov(.)) %>%
+    mahalanobis(colMeans(.), cov(.)) %>%
     # mahalanobis(colMeans(.), cov(.)) %>%
     ## Now it is a vector of Mahalanobis distance
     as.data.frame() %>%
