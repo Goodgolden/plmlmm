@@ -287,7 +287,7 @@ lmm_train <- foreach(i = 1:20,
                   .packages = c("plmlmm", "splines", "nlme", "tidyverse", "JMbayes")) %dopar% {
                      .GlobalEnv$simulation_20 <- simulation_20
                      `%!in%` <- Negate(`%in%`)
-                    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
+                    train_data <<- dplyr::filter(simulation_20[[i]], group == "training")
                     train_baseline <- train_data %>% 
                       group_by(id) %>%
                       slice(1L)
@@ -313,8 +313,8 @@ lmm_test <- foreach(i = 1:20,
                   .packages = c("plmlmm", "splines", "nlme", "tidyverse", "JMbayes")) %dopar% {
                      .GlobalEnv$simulation_20 <- simulation_20
                      `%!in%` <- Negate(`%in%`)
-                    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
-                    test_data <- dplyr::filter(simulation_20[[i]], group == "testing")
+                    train_data <<- dplyr::filter(simulation_20[[i]], group == "training")
+                    test_data <<- dplyr::filter(simulation_20[[i]], group == "testing")
                     test_baseline <- test_data %>% 
                       group_by(id) %>%
                       slice(1L)

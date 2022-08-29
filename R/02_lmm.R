@@ -9,21 +9,29 @@
 #'
 #' @examples
 lmm_pred <- function(train_data,
+                     test_data,
                      baseline) {
 
+  # train_data <- train
+  # test_data <- train_data
   ctrl <- lmeControl(opt = 'optim')
   fitting <-  lme(ht ~ bs(time, knots = c(10, 12, 15), degree = 3) * sex - 1,
                   random = ~ 1 + bs(time, df = 5, degree = 2, intercept = FALSE)| id,
                   control = ctrl,
                   data = train_data)
 
+<<<<<<< HEAD
 
+=======
+  time_vec <- unique(test_data$time)
+  # baseline <- train_baseline
+>>>>>>> c1b852bf6e195462e88078d35a5c1aa0a0fbcde3
   lmmpred_95 <- IndvPred_lme(
     lmeObject = fitting,
     newdata = baseline,
     timeVar = "time",
     M = 500,
-    # times = time_vec,
+    times = time_vec,
     all_times = TRUE,
     return_data = TRUE,
     level = 0.95,
@@ -36,20 +44,19 @@ lmm_pred <- function(train_data,
     newdata = baseline,
     timeVar = "time",
     M = 500,
-    # times = time_vec,
+    times = time_vec,
     all_times = TRUE,
     return_data = TRUE,
     level = 0.90,
     interval = "prediction",
     seed = 555)
 
-
   lmmpred_50 <- IndvPred_lme(
     lmeObject = fitting,
     newdata = baseline,
     timeVar = "time",
     M = 500,
-    # times = time_vec,
+    times = time_vec,
     all_times = TRUE,
     return_data = TRUE,
     level = 0.5,
@@ -67,7 +74,7 @@ lmm_pred <- function(train_data,
                             id, time,
                             # observed = ht,
                             pred,
-                            centile50 = low,
+                            centile05 = low,
                             centile95 = upp),
               by = c("id", "time", "pred")) %>%
     full_join(dplyr::select(lmmpred_95,
@@ -77,7 +84,22 @@ lmm_pred <- function(train_data,
                             centile025 = low,
                             centile975 = upp),
               by = c("id", "time", "pred")) %>%
+<<<<<<< HEAD
   na.omit()
+=======
+    mutate(time = round(time, 2)) %>%
+    na.omit() %>%
+    as.data.frame() %>%
+    right_join(train_data) %>%
+    mutate(coverage50 = ifelse(ht >= `centile25` & ht <= `centile75`, 1, 0),
+           coverage80 = ifelse(ht >= `centile05` & ht <= `centile95`, 1, 0),
+           coverage95 = ifelse(ht >= `centile025` & ht <= `centile975`, 1, 0),
+           # mse = (actual - `50`)^2,
+           # biassq = bias^2,
+           # var = mse - bias^2,
+           bias = abs(ht - pred))
+
+>>>>>>> c1b852bf6e195462e88078d35a5c1aa0a0fbcde3
   return(lmm_results)
 }
 ## }}}--------------------------------------------------------------------------
