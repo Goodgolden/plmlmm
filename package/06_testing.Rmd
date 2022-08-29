@@ -225,7 +225,6 @@ test_mhlp <- foreach(i = 1:20,
     
     # View(lb_train)
     # View(lb_test)
-    
     mhl_p05 <- map(id_test,
                    ~try(pred_matching(
                      lb_data = lb_train,
@@ -233,7 +232,7 @@ test_mhlp <- foreach(i = 1:20,
                      test_data = test_data,
                      train_data = train_data,
                      match_methods = "mahalanobis",
-                     match_alpha = 0.05,
+                     match_alpha = 0.9,
                      gamlss_formula = "ht ~ cs(time, df = 3)",
                      gamsigma_formula = "~ cs(time, df = 1)",
                      match_plot = TRUE,

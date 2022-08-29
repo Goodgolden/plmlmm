@@ -228,43 +228,58 @@ timeb - timea
 
 
 ```{r}
-# detectCores()
-# myCluster <- makeCluster(20, # number of cores to use
-#                          type = "PSOCK") # type of cluster
-# registerDoParallel(myCluster)
-# timea <- Sys.time()
+detectCores()
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
 
 
-lmm_results <- list()
-for (i in 1:20) {
+registerDoParallel(myCluster)
+timea <- Sys.time()
+lmm_train <- foreach(i = 1:20, 
+                  .export = ls(globalenv()), 
+                  .packages = c("plmlmm", "splines", "nlme", "tidyverse", "JMbayes")) %dopar% {
+                     .GlobalEnv$simulation_20 <- simulation_20
+                     `%!in%` <- Negate(`%in%`)
                     train_data <- dplyr::filter(simulation_20[[i]], group == "training")
-                  
                     train_baseline <- train_data %>% 
                       group_by(id) %>%
                       slice(1L)
                   
-                    lmm_results[i] <- lmm_pred(train_data, train_baseline)
-                    lmm_results[i]            
+                    lmm_results <- lmm_pred(train_data, train_baseline)
+                    lmm_results           
                   }
 
-
-save(lmm_results, file = "plmlmm_simulation_lmm_dataset1_results_20220824.Rdata")
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+save(lmm_train, file = "plmlmm_simulation_lmm_dataset1_results_20220824.Rdata")
 # stopCluster(myCluster)
 
 
-lmm_test <- list()
-for (i in 1:20) {
+detectCores()
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
+lmm_test <- foreach(i = 1:20, 
+                  .export = ls(globalenv()), 
+                  .packages = c("plmlmm", "splines", "nlme", "tidyverse", "JMbayes")) %dopar% {
+                     .GlobalEnv$simulation_20 <- simulation_20
+                     `%!in%` <- Negate(`%in%`)
                     train_data <- dplyr::filter(simulation_20[[i]], group == "training")
                     test_data <- dplyr::filter(simulation_20[[i]], group == "testing")
-                    
                     test_baseline <- test_data %>% 
                       group_by(id) %>%
                       slice(1L)
                   
-                    lmm_test[i] <- lmm_pred(train_data, test_baseline)
-                    lmm_test[i]            
+                    lmm_results <- lmm_pred(train_data, test_baseline)
+                    lmm_results        
                   }
-
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
 
 save(lmm_test, file = "test_plmlmm_simulation_lmm_dataset1_results_20220824.Rdata")
 ```
