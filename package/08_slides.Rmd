@@ -1,0 +1,99 @@
+---
+title: "Extension for people like me methods with Mahalanobis distrance"
+author: "Randy"
+subtitle: "a method based on predictive mean matching and curve matching"
+institute: Department of Biostatistics & Informatics 
+output:
+  beamer_presentation:
+    theme: Berkeley
+    # colortheme: rose  
+    slide_level: 2
+    toc: true
+    keep_tex: true
+    # latex_engine: pdflatex
+    dev: cairo_pdf
+fontsize: 10pt
+make149: yes
+header-includes:
+- \AtBeginSubsection{}
+- \AtBeginSection{}
+---
+
+```{r setup, include=FALSE, cache=F, message=F, warning=F, results="hide"}
+knitr::opts_chunk$set(cache = TRUE, echo = FALSE, message = FALSE, warning = FALSE)
+knitr::opts_chunk$set(fig.height = 4, fig.width = 5, out.width = '30%', fig.align='center')
+knitr::opts_chunk$set(fig.path = 'figs_L4/', cache.path = 'cache/')
+```
+
+# Background 
+
+## People-like-me is a curving matching method
+
+The traditional predictive modeling: 
+
+- A global inference and universal modelling over all available data. 
+- Overlooking the cultural diversity and genetic heterogeneity for patients
+
+
+## People-like-me is a curving matching method
+
+People-like-me method:
+
+- Individualized curving matching 
+- Using fewer but more similar samples
+- Getting higher predictive performance than with similar matches
+- Information of **"people-like-me"** (***the nearest neighbors of predictive mean***)
+
+
+
+## Predictive mean matching can create accurate imputation
+
+The Predictive Mean Matching 
+
+- The imputations created by predictive mean matching follow the data nicely
+- With respect to **certain metrics**
+- To avoid the dataset noise and model misspecification
+
+**Through exhaustive comparisons with predictive mean, 
+for specific target and the most similar matching donor-cohort**
+
+
+## Metrics :: there are different strategies for selecting the donor-cohort
+
+1.  "The chosen threshold" 
+
+  Choose a threshold, and take all donors agreed within this threshold
+
+
+2.  "The nearest neighbor" 
+
+  Decide the number of matching donors, and choose this number of donors with minimal metrics. 
+  
+3.  "Single time points" v.s "Multiple time points"
+
+  What we did in the past: rely on single predictive mean matching with one single time point and a fixed number of candidate donors.
+
+## Mahalanobis Distance
+
+
+
+# What we got so far
+
+## Algorithm 
+
+
+
+
+## Preliminary Results
+
+
+
+
+## Package and Shinyapp
+
+
+
+# Thanks
+
+
+Thanks for everyone's help!!!

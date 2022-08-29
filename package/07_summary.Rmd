@@ -12,21 +12,46 @@ library(tidyverse)
 ```{r}
 load("Z:/plmlmm/package/plmlmm_simulation_output_eld_dataset1_results_20220824.Rdata")
 load("Z:/plmlmm/package/plmlmm_simulation_output_mhln_dataset1_results_20220824.Rdata")
+load("Z:/plmlmm/package/plmlmm_simulation_output_mhlp_dataset1_results_20220824.Rdata")
+load("Z:/plmlmm/package/plmlmm_simulation_output_sgl_dataset1_results_20220824.Rdata")
+load("Z:/plmlmm/package/plmlmm_simulation_lmm_dataset1_results_20220824.Rdata")
 
-eld_obs_cvg50 <- unlist(output_eld, recursive = FALSE) %>%
+(eld_train_bias <- output_eld %>%
+  unlist(recursive = FALSE) %>%
   map("centiles_observed") %>% 
   map("bias") %>% 
   map(~mean(., na.rm = TRUE)) %>%
   unlist() %>% 
-  mean()
+  mean())
 
-mhln_obs_cvg50 <- unlist(output_mhln, recursive = FALSE) %>%
+(mhln_train_bias <- output_mhln %>%
+  unlist(recursive = FALSE) %>%
   map("centiles_observed") %>%
-  map("coverage95") %>% 
+  map("bias") %>% 
   map(~mean(., na.rm = TRUE)) %>%
-  unlist() %>% mean()
+  unlist() %>% mean())
 
-eld_obs_cvg50
-mhln_obs_cvg50
+
+(mhlp_train_bias <- output_mhlp %>%
+  unlist(recursive = FALSE) %>%
+  map("centiles_observed") %>%
+  map("bias") %>% 
+  map(~mean(., na.rm = TRUE)) %>%
+  unlist() %>% mean(na.rm = TRUE))
+
+(sgl_train_bias <- output_sgl10_n10 %>%
+  unlist(recursive = FALSE) %>%
+  map("centiles_observed") %>%
+  map("bias") %>% 
+  map(~mean(., na.rm = TRUE)) %>%
+  unlist() %>% mean())
+
+lmm_bias <- lmm_train %>% 
+
+
+eld_obs_bias
+mhln_obs_bias
+mhlp_train_bias
+sgl_train_bias
 ```
 
