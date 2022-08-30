@@ -19,13 +19,8 @@ lmm_pred <- function(train_data,
                   random = ~ 1 + bs(time, df = 5, degree = 2, intercept = FALSE)| id,
                   control = ctrl,
                   data = train_data)
-
-<<<<<<< HEAD
-
-=======
   time_vec <- unique(test_data$time)
-  # baseline <- train_baseline
->>>>>>> c1b852bf6e195462e88078d35a5c1aa0a0fbcde3
+
   lmmpred_95 <- IndvPred_lme(
     lmeObject = fitting,
     newdata = baseline,
@@ -84,9 +79,6 @@ lmm_pred <- function(train_data,
                             centile025 = low,
                             centile975 = upp),
               by = c("id", "time", "pred")) %>%
-<<<<<<< HEAD
-  na.omit()
-=======
     mutate(time = round(time, 2)) %>%
     na.omit() %>%
     as.data.frame() %>%
@@ -99,7 +91,6 @@ lmm_pred <- function(train_data,
            # var = mse - bias^2,
            bias = abs(ht - pred))
 
->>>>>>> c1b852bf6e195462e88078d35a5c1aa0a0fbcde3
   return(lmm_results)
 }
 ## }}}--------------------------------------------------------------------------
