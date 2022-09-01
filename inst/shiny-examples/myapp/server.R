@@ -16,7 +16,7 @@ server <- function(input, output) {
       id = "id",
       dataset = train,
       knots = c(5, 10, 12),
-      pred_time = c(2, 4, 6, 8, 10, 12, 14, 16),
+      pred_time = c(2, 4, 6, 8, 10, 12),
       choice = "predicted")
 
   lb_data <-
