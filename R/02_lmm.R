@@ -19,9 +19,8 @@ lmm_pred <- function(train_data,
                   random = ~ 1 + bs(time, df = 5, degree = 2, intercept = FALSE)| id,
                   control = ctrl,
                   data = train_data)
-
   time_vec <- unique(test_data$time)
-  # baseline <- train_baseline
+
   lmmpred_95 <- IndvPred_lme(
     lmeObject = fitting,
     newdata = baseline,
@@ -33,6 +32,7 @@ lmm_pred <- function(train_data,
     level = 0.95,
     interval = "prediction",
     seed = 555)
+
 
   lmmpred_90 <- IndvPred_lme(
     lmeObject = fitting,
