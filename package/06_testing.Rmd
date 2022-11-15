@@ -171,11 +171,11 @@ timeb - timea
 
 ```{r}
 detectCores()
-myCluster <- makeCluster(20, # number of cores to use
+myCluster <- makeCluster(5, # number of cores to use
                          type = "PSOCK") # type of cluster
 registerDoParallel(myCluster)
 timea <- Sys.time()
-test_mhlp <- foreach(i = 1:20,
+test_mhlp <- foreach(i = 1:5,
                   .export = ls(globalenv()),
                   .packages = c("plmlmm", "brokenstick")) %dopar% {
 
@@ -225,7 +225,7 @@ test_mhlp <- foreach(i = 1:20,
     
     # View(lb_train)
     # View(lb_test)
-    mhl_p05 <- map(id_test,
+    mhl_p9 <- map(id_test,
                    ~try(pred_matching(
                      lb_data = lb_train,
                      lb_test = lb_test,
@@ -235,12 +235,12 @@ test_mhlp <- foreach(i = 1:20,
                      match_alpha = 0.9,
                      gamlss_formula = "ht ~ cs(time, df = 3)",
                      gamsigma_formula = "~ cs(time, df = 1)",
-                     match_plot = TRUE,
-                     predict_plot = TRUE,
+                     match_plot = FALSE,
+                     predict_plot = FALSE,
                      sbj = .)))
-   mhl_p05
+   mhl_p9
    }
-save(test_mhlp, file = "plmlmm_test_simulation_mhl_p07_results_20220827.Rdata")
+save(test_mhlp, file = "plmlmm_test_simulation_mhl_p07_results_20220827_new.Rdata")
 stopCluster(myCluster)
 timeb <- Sys.time()
 timeb - timea

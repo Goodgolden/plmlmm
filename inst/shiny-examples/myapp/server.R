@@ -8,20 +8,19 @@ server <- function(input, output) {
 
   observeEvent(input$run, {  })
 
-
   bks_pred <-
-    plmlmm:::brokenstick_prediction(
+    plmlmm::brokenstick_prediction(
       outcome = "ht",
       time = "time",
       id = "id",
-      dataset = train,
+      train_data = train,
       knots = c(5, 10, 12),
       pred_time = c(2, 4, 6, 8, 10, 12, 14, 16),
       choice = "predicted")
 
   lb_data <-
-    plmlmm:::linear_brokenstick(
-      lm_formula = "`.pred` ~ time * sex + baseline",
+    plmlmm::linear_brokenstick(
+      lm_formula = "`.pred` ~ timef * sex + baseline",
       bks_pred = bks_pred)
 
 #
@@ -42,9 +41,11 @@ server <- function(input, output) {
         input$run)
 
     pm_mhl_p <-
-      plmlmm:::pred_matching(
+      plmlmm::pred_matching(
         lb_data = lb_data,
-        obs_data = train,
+        lb_test = lb_data,
+        test_data = train,
+        train_data = train,
         match_methods = "mahalanobis",
         match_alpha = alpha(),
         match_num = NULL,
@@ -72,9 +73,11 @@ server <- function(input, output) {
         input$run)
 
     pm_mhl_n <-
-      plmlmm:::pred_matching(
+      plmlmm::pred_matching(
         lb_data = lb_data,
-        obs_data = train,
+        lb_test = lb_data,
+        test_data = train,
+        train_data = train,
         match_methods = "mahalanobis",
         match_num = num(),
         match_alpha = NULL,
@@ -102,9 +105,11 @@ server <- function(input, output) {
         input$run)
 
     pm_eld_n <-
-      plmlmm:::pred_matching(
+      plmlmm::pred_matching(
         lb_data = lb_data,
-        obs_data = train,
+        lb_test = lb_data,
+        test_data = train,
+        train_data = train,
         match_methods = "euclidean",
         match_num = num(),
         gamlss_formula = "ht ~ cs(time, df = 3)",
@@ -132,9 +137,11 @@ server <- function(input, output) {
         input$run)
 
     pm_sgl_n <-
-      plmlmm:::pred_matching(
+      plmlmm::pred_matching(
         lb_data = lb_data,
-        obs_data = train,
+        lb_test = lb_data,
+        test_data = train,
+        train_data = train,
         match_methods = "single",
         match_num = num(),
         match_time = time(),
@@ -150,8 +157,4 @@ server <- function(input, output) {
                               labs(subtitle = "Single distance with matching sample size 'prediction'"),
                             nrow = 1)
   })
-
-
-
-
   }

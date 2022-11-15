@@ -186,7 +186,6 @@ use_readme_rmd()
 build_readme()
 
 usethis::use_roxygen_md()
-
 document()
 ```
 
@@ -203,7 +202,7 @@ Here is a typical sequence of calls when using devtools for package development:
 
 
 ```{r}
-devtools::load_all()
-plmlmm::run_shiny()
+load_all()
+plmlmm:::run_shiny()
 ```
 
