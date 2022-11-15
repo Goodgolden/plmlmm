@@ -1,0 +1,707 @@
+---
+title: "08_osg_summary"
+author: "randy"
+date: "2022-10-20"
+output: html_document
+---
+
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+
+```{r}
+pullout <- function(filename) {
+  load(paste0("~/Desktop/project/plmlmm/results/", filename))
+  ## eld_n10 train {{{-------------------------------------------------------------
+  eld_n10_train_bias <- train_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  
+  eld_n10_train_mse <- train_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    map(~.$bias ^2) %>%
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  eld_n10_train_cov50<- train_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  eld_n10_train_cov80 <- train_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  eld_n10_train_cov90 <- train_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    map("coverage90") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  ## }}}------------------------------------------------------------------------
+
+  ## eld_n10 test {{{-------------------------------------------------------------
+  eld_n10_test_bias <- test_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  eld_n10_test_mse <- test_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    map(~.$bias ^2) %>%
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  eld_n10_test_cov50<- test_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  eld_n10_test_cov80 <- test_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  eld_n10_test_cov90 <- test_eld_n10 %>%
+    # output_eld_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    map("coverage90") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  ## }}}------------------------------------------------------------------------
+  
+  ## mhl_n10 train {{{-------------------------------------------------------------
+  mhl_n10_train_bias <- train_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_n10_train_mse <- train_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    map(~.$bias ^2) %>%
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_n10_train_cov50<- train_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_n10_train_cov80 <- train_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_n10_train_cov90 <- train_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    map("coverage90") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  ## }}}------------------------------------------------------------------------
+
+  ## mhl_n10 test {{{-------------------------------------------------------------
+  mhl_n10_test_bias <- test_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_n10_test_mse <- test_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    map(~.$bias ^2) %>%
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_n10_test_cov50<- test_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_n10_test_cov80 <- test_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_n10_test_cov90 <- test_mhl_n10 %>%
+    # output_mhl_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    map("coverage90") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  ## }}}------------------------------------------------------------------------  
+  
+  ## mhl_p09 train {{{-------------------------------------------------------------
+  mhl_p09_train_bias <- train_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+
+  test <- test_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>%
+    map("bias")
+
+  View(test)
+  
+  mhl_p09_train_mse <- train_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    map(~.$bias ^2) %>%
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_p09_train_cov50<- train_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_p09_train_cov80 <- train_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_p09_train_cov90 <- train_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    map("coverage90") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  ## }}}------------------------------------------------------------------------
+
+  ## mhl_p09 test {{{-------------------------------------------------------------
+  mhl_p09_test_bias <- test_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_p09_test_mse <- test_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    map(~.$bias ^2) %>%
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  mhl_p09_test_cov50<- test_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  
+  mhl_p09_test_cov80 <- test_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  
+  mhl_p09_test_cov90 <- test_mhl_p09 %>%
+    # output_mhl_p09 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    map("coverage90") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  ## }}}------------------------------------------------------------------------  
+  
+  ## sgl10_n10 train {{{-------------------------------------------------------------
+  sgl10_n10_train_bias <- train_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  sgl10_n10_train_mse <- train_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    map(~.$bias ^2) %>%
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  sgl10_n10_train_cov50<- train_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  sgl10_n10_train_cov80 <- train_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  sgl10_n10_train_cov90 <- train_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    map("coverage90") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  ## }}}------------------------------------------------------------------------
+
+  ## sgl10_n10 test {{{-------------------------------------------------------------
+  sgl10_n10_test_bias <- test_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  sgl10_n10_test_mse <- test_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    map(~.$bias ^2) %>%
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  sgl10_n10_test_cov50<- test_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  sgl10_n10_test_cov80 <- test_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  sgl10_n10_test_cov90 <- test_sgl10_n10 %>%
+    # output_sgl10_n10 %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    map("coverage90") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  ## }}}------------------------------------------------------------------------  
+
+  result <- list("seed" = seed,
+                 "eld_n10_train_bias" = eld_n10_train_bias, "eld_n10_train_mse" = eld_n10_train_mse, "eld_n10_train_cov50" = eld_n10_train_cov50,
+                 "eld_n10_train_cov80" = eld_n10_train_cov80, "eld_n10_train_cov90" = eld_n10_train_cov90,
+                 "mhl_n10_train_bias" = mhl_n10_train_bias, "mhl_n10_train_mse" = mhl_n10_train_mse, "mhl_n10_train_cov50" = mhl_n10_train_cov50,
+                 "mhl_n10_train_cov80" = mhl_n10_train_cov80, "mhl_n10_train_cov90" = mhl_n10_train_cov90,
+                 "mhl_p09_train_bias" = mhl_p09_train_bias, "mhl_p09_train_mse" = mhl_p09_train_mse, "mhl_p09_train_cov50" = mhl_p09_train_cov50,
+                 "mhl_p09_train_cov80" = mhl_p09_train_cov80, "mhl_p09_train_cov90" = mhl_p09_train_cov90,
+                 "sgl10_n10_train_bias" = sgl10_n10_train_bias, "sgl10_n10_train_mse" = sgl10_n10_train_mse, "sgl10_n10_train_cov50" = sgl10_n10_train_cov50,
+                 "sgl10_n10_train_cov80" = sgl10_n10_train_cov80, "sgl10_n10_train_cov90" = sgl10_n10_train_cov90,
+                 "eld_n10_test_bias" = eld_n10_test_bias, "eld_n10_test_mse" = eld_n10_test_mse, "eld_n10_test_cov50" = eld_n10_test_cov50,
+                 "eld_n10_test_cov80" = eld_n10_test_cov80, "eld_n10_test_cov90" = eld_n10_test_cov90,
+                 "mhl_n10_test_bias" = mhl_n10_test_bias, "mhl_n10_test_mse" = mhl_n10_test_mse, "mhl_n10_test_cov50" = mhl_n10_test_cov50,
+                 "mhl_n10_test_cov80" = mhl_n10_test_cov80, "mhl_n10_test_cov90" = mhl_n10_test_cov90,
+                 "mhl_p09_test_bias" = mhl_p09_test_bias, "mhl_p09_test_mse" = mhl_p09_test_mse, "mhl_p09_test_cov50" = mhl_p09_test_cov50,
+                 "mhl_p09_test_cov80" = mhl_p09_test_cov80, "mhl_p09_test_cov90" = mhl_p09_test_cov90,
+                 "sgl10_n10_test_bias" = sgl10_n10_test_bias, "sgl10_n10_test_mse" = sgl10_n10_test_mse, "sgl10_n10_test_cov50" = sgl10_n10_test_cov50,
+                 "sgl10_n10_test_cov80" = sgl10_n10_test_cov80, "sgl10_n10_test_cov90" = sgl10_n10_test_cov90)
+  return(result)
+}
+
+```
+
+```{r}
+files <- list.files(path = "~/Desktop/project/plmlmm/results", pattern = ".Rdata")
+files
+length(files)
+
+results1 <- map_dfr(files[1:200], pullout) %>% 
+  arrange(seed)
+
+results2 <- map_dfr(files[201:400], pullout) %>% 
+  arrange(seed)
+
+results3 <- map_dfr(files[401:600], pullout) %>% 
+  arrange(seed)
+
+results4 <- map_dfr(files[601:800], pullout) %>% 
+  arrange(seed)
+
+results5 <- map_dfr(files[801:1098], pullout) %>% 
+    arrange(seed)
+
+results_final <- rbind(results1, results2, results3, results4, results5) %>%
+  na.omit() %>%
+  head(1000)
+
+unique(results_final$seed) %>% length()
+save(results_final, file = "final_results.Rdata")
+```
+
+
+
+```{r}
+load("final_results.Rdata")
+data <- results_final %>% 
+  pivot_longer(cols = -seed,
+               names_to = "category",
+               values_to = "values") %>%
+  separate(col = category, into = c("method", "parameter", "group", "type")) %>%
+  unite("method", c("method", "parameter")) %>%
+  mutate(group = factor(group, levels = c("train", "test"))) %>%
+  mutate(method = case_when(method == "eld_n10" ~ "Euclidean SS10",
+                   method == "mhl_n10" ~ "Mahalanobis SS10",
+                   method == "sgl10_n10" ~ "Singaltime SS10",
+                   method == "mhl_p09" ~ "Mahalanobis alpha0.9")) 
+```
+
+
+```{r}
+bias_plot <- data %>%
+          filter(type == "bias") %>%
+          ggplot(aes(x = method, y = values),
+                 group = method) +
+          geom_point(aes(color = method)) +
+          geom_boxplot(aes(fill = method)) +
+          theme_bw() +
+          labs(x = "Methods") +
+          labs(y = "Bias") +
+          ggthemes::scale_fill_tableau("Jewel Bright") + 
+          ## so far the best color composition
+          ggthemes::scale_colour_tableau("Jewel Bright") +
+          facet_wrap("group")
+          ## the tableau is in the ggthemes
+
+rmse_plot <- data %>%
+          filter(type == "mse") %>%
+          mutate(values = sqrt(values)) %>%
+          ggplot(aes(x = method, y = values),
+                 group = method) +
+          geom_point(aes(color = method)) +
+          geom_boxplot(aes(fill = method)) +
+          theme_bw() +
+          labs(x = "Methods") +
+          labs(y = "RMSE") +
+          ggthemes::scale_fill_tableau("Jewel Bright") + 
+          ## so far the best color composition
+          ggthemes::scale_colour_tableau("Jewel Bright") +
+          facet_wrap("group")
+          ## the tableau is in the ggthemes
+
+cov50_plot <- data %>% 
+          filter(type == "cov50") %>%
+          ggplot(aes(x = method, y = values),
+                 group = method) +
+          geom_point(aes(color = method)) +
+          geom_boxplot(aes(fill = method)) +
+          theme_bw() +
+          labs(x = "Methods") +
+          labs(y = "Coverage 50%") +
+          ggthemes::scale_fill_tableau("Jewel Bright") + 
+          ## so far the best color composition
+          ggthemes::scale_colour_tableau("Jewel Bright") +
+          facet_wrap("group")
+          ## the tableau is in the ggthemes
+
+cov80_plot <- data %>% 
+          filter(type == "cov80") %>%
+          ggplot(aes(x = method, y = values),
+                 group = method) +
+          geom_point(aes(color = method)) +
+          geom_boxplot(aes(fill = method)) +
+          theme_bw() +
+          labs(x = "Methods") +
+          labs(y = "Coverage 80%") +
+          ggthemes::scale_fill_tableau("Jewel Bright") + 
+          ## so far the best color composition
+          ggthemes::scale_colour_tableau("Jewel Bright") +
+          facet_wrap("group")
+          ## the tableau is in the ggthemes
+
+cov90_plot <- data %>% 
+          filter(type == "cov90") %>%
+          mutate(values = sqrt(values)) %>%
+          ggplot(aes(x = method, y = values),
+                 group = method) +
+          geom_point(aes(color = method)) +
+          geom_boxplot(aes(fill = method)) +
+          theme_bw() +
+          labs(x = "Methods") +
+          labs(y = "Coverage 90%") +
+          ggthemes::scale_fill_tableau("Jewel Bright") + 
+          ## so far the best color composition
+          ggthemes::scale_colour_tableau("Jewel Bright") +
+          facet_wrap("group")
+          ## the tableau is in the ggthemes
+
+```
+
+```{r fig.width=6, fig.height=3, warning=FALSE, }
+bias_plot
+ggsave("test_bias_simulation_20221020.png")
+
+rmse_plot
+ggsave("test_rmse_simulation_20221020.png")
+
+cov50_plot
+ggsave("test_coverage50_simulation_20221020.png")
+
+cov80_plot
+ggsave("test_coverage80_simulation_20221020.png")
+
+cov90_plot
+ggsave("test_coverage90_simulation_20221020.png")
+
+
+```
+
+
+
+
+
+
+
+
+
