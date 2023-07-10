@@ -1,0 +1,88 @@
+---
+title: "flowgraph"
+---
+
+
+```{r}
+library(tidyverse)
+library(DiagrammeR)
+library(rsvg)
+library(xml2)
+library(DiagrammeRsvg)
+```
+
+
+```{r}
+# install.packages("DiagrammeR")
+flowchart <- DiagrammeR::grViz("
+digraph graph2 {
+
+graph [layout = dot]
+
+# node definitions with substituted label text
+node [shape = rectangle, width = 4, fillcolor = Biege]
+a [label = 'Raw Data: \n total number of children \n registered in the EPIC dataset \n(n = 1772)']
+b [label = 'Eligible Subjects: \n  (n = 1370)']
+c [label = 'Working Data: \n with all eligible subjects \n randomly split dataset into two subsets']
+d [label = 'Training Data:\n serving as a pool for selecting \n the set of information donors \n (n = 913)']
+e [label = 'Testing Data:\n serving as targets for prediction validation \n and evaluationfor model performance \n (n = 457)']
+
+ c -> {d e}
+
+# These are the main nodes at top of graph
+  a -> b
+  
+  [label = 
+  <
+    Subjects Excluded:<br ALIGN = 'LEFT'/> 
+    &nbsp; &#8226; No missing baseline variables<br ALIGN = 'LEFT'/>
+     &nbsp; &#8226; Minimal 10 times of visits<br ALIGN = 'LEFT'/> 
+    &nbsp; &#8226; Minimal 5 years of following up<br ALIGN = 'LEFT'/>
+     &nbsp; &#8226; Minimal age of 4 registerd in the study<br ALIGN = 'LEFT'/>
+    &nbsp; (n = 402) <br ALIGN = 'LEFT'/> 
+    >
+  ]
+ 
+ b -> c
+ 
+ [label =
+ <
+   Data Cleaning:<br ALIGN = 'LEFT'/> 
+   &nbsp;     &#8226; Remove the time points before age 3 <br ALIGN = 'LEFT'/>
+    &nbsp;     &#8226; Realign with the earliest age <br ALIGN = 'LEFT'/>
+    &nbsp;     &#8226; Covert age into time variable<br ALIGN = 'LEFT'/> 
+  >
+ ]
+
+}
+
+")
+
+flowchart
+
+Sys.Date()
+
+flowchart %>%
+  export_svg() %>%
+  read_xml() %>%
+  write_xml(paste0("figure/00_plmlmm_flowchart1", Sys.Date(), ".svg"))
+
+flowchart %>%
+  export_svg() %>% 
+  charToRaw() %>% 
+  rsvg_png(paste0("figure/00_plmlmm_flowchart1", Sys.Date(), ".png"))
+
+
+# export_graph(flowchart,
+# file_name = "final/flowchart_graph.png",
+# file_type = "png")
+```
+
+
+
+Box 1: Neighbor’s-Based Prediction via Predictive Mean Matching
+1. A Brokenstick model was fit to the training data to estimate a TUG observation at 90 days following surgery for all patients in the training set.
+2. A multivariable linear model was fit with this 90-day estimate as the outcome and “matching characteristics” (e.g., age, sex, preoperative TUG time) as predictors.
+3. The realized TUG observations from the matches were modeled with Generalized Additive Models for Location Scale and Shape (GAMLSS) to generate the neighbors based prediction.
+4. A Leave One Out Cross Validation (LOOCV) approach used to identify the optimal number of matches (m) based on prediction performance.
+5. Using the optimal m, patients in the testing data were matched to patients in the training data to generate neighbors-based predictions via GAMLSS.

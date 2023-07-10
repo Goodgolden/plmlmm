@@ -19,28 +19,15 @@ brokenstick_prediction <-
            time = "time",
            id = "id",
            knots = c(6, 10, 12),
-           pred_time = c(2, 4, 6, 8, 10, 12, 14, 16),
+           pred_time = c(6, 8, 10, 12),
            choice = c("predicted", "baseline", "observed", "testing"),
            train_data,
            newdata = NULL) {
-
-  ## match_time must be in the set of knots
-  # if (match_time %!in% knots) {
-  #   stop("matching time points is not in the set of knots!")
-  # }
-  #
-  # info <- train_data %>%
-  #   dplyr::select(eval(id),
-  #                 eval(lmm_var)) %>%
-  #   unique()
 
   formula <- paste0(outcome, "~", time, "|", id)
   bks <- brokenstick::brokenstick(formula = as.formula(formula),
                                   data = train_data,
                                   knots = knots)
-
-
-
   dataset_baseline <- train_data %>%
       group_by(eval(id)) %>%
       arrange(eval(time)) %>%
@@ -66,26 +53,10 @@ brokenstick_prediction <-
 
     dataset_knots <-
       bks_pred_knots %>%
-      # pivot_wider(names_from = time,
-      #             values_from = .pred) %>%
       select_if(not_all_na) %>%
-      # dplyr::select(target = as.character(match_time),
-      #               everything()) %>%
-      full_join(newdata, by = "id") %>%
-      transmute(.source = .source,
-                id = id,
-                time = time.x,
-                .pred = .pred,
-                time = time.x,
-                baseline = ht,
-                sex = sex,
-                .fixed = .fixed,
-                varibility = varibility,
-                group = group,
-                timef = paste0("time", time.x)
-             )
-    # pivot_wider(names_from = time,,
-    #             values_from = .pred)
+      full_join(test_baseline) %>%
+      dplyr::select(baseline = ht, everything())
+    # browser()
     return(dataset_knots)
   }
 
@@ -114,12 +85,10 @@ brokenstick_prediction <-
                             group = train_data$id)
     dataset_knots <-
       bks_pred_knots %>%
-      # pivot_wider(names_from = time,
-      #             values_from = .pred) %>%
       select_if(not_all_na) %>%
       # dplyr::select(target = as.character(match_time),
       #               everything()) %>%
-      full_join(dataset_baseline, by = c("id" = "eval(id)")) %>%
+      full_join(dataset_baseline, by = c("id" = "eval(id)", "sex")) %>%
       mutate(timef = paste0("time", time))
       # pivot_wider(names_from = time,
       #             values_from = .pred)
@@ -416,3 +385,145 @@ plm_ind_plot <- function(quantile,
   plot
 }
 ## }}}--------------------------------------------------------------------------
+
+
+
+
+
+#' Title
+#'
+#' @param outcome
+#' @param time
+#' @param id
+#' @param train_data
+#' @param test_data
+#' @param knots
+#' @param pred_time
+#' @param linear_model
+#' @param match_num
+#' @param match_time
+#' @param match_methods
+#' @param match_alpha
+#' @param gamlss_formula
+#' @param gamsigma_formula
+#' @param match_plot
+#' @param predict_plot
+#' @param sbj
+#'
+#' @return
+#' @export
+#'
+#' @examples
+plm <- function(outcome = "ht",
+                time = "time",
+                id = "id",
+                train_data = train,
+                test_data = test,
+                knots = c(5, 10),
+                pred_time = c(4, 6, 8, 12),
+                # newdata = test_baseline,
+                linear_model = "`.pred` ~ time * sex + baseline",
+                match_num = NULL,
+                match_time = NULL,
+                match_methods = "mahalanobis",
+                match_alpha = 0.95,
+                gamlss_formula = "ht ~ cs(time, df = 3)",
+                gamsigma_formula = "~ cs(time, df = 1)",
+                match_plot = TRUE,
+                predict_plot = TRUE,
+                sbj = sbj){
+  ## brokenstick ----------------------------------
+  train_baseline <-
+    train_data %>%
+    group_by(id) %>%
+    slice(1L)
+  test_baseline <-
+    test_data %>%
+    group_by(id) %>%
+    slice(1L)
+
+  bks <- brokenstick::brokenstick(ht ~ time | id,
+                                  data = train_data,
+                                  knots = knots)
+
+  dataset_baseline <- train_data %>%
+    group_by(id) %>%
+    slice(1L) %>%
+    dplyr::select(-time) %>%
+    dplyr::select(baseline = ht, everything())
+
+  id_train <- unique(train_data$id)
+  id_test <- unique(test_data$id)
+
+  bks_pred_knots <- predict(bks,
+                            x = pred_time,
+                            shape = "long",
+                            # group = train_data$id,
+                            include_data = FALSE) %>%
+    dplyr::select(id, time, `.pred`)
+
+  train_pred <-
+    bks_pred_knots %>%
+    # pivot_wider(names_from = time,
+    #             values_from = .pred) %>%
+    select_if(not_all_na) %>%
+    # dplyr::select(target = as.character(match_time),
+    #               everything()) %>%
+    full_join(dataset_baseline, by = c("id")) %>%
+    mutate(timef = paste0("time", time))
+
+
+  bks_pred_knots <- predict(bks,
+                            newdata = test_baseline,
+                            x = pred_time,
+                            group = test_baseline$id) %>%
+    dplyr::select(id, time, .pred) %>%
+    filter(time != 0)
+
+  test_pred <-
+    bks_pred_knots %>%
+    # pivot_wider(names_from = time,
+    #             values_from = .pred) %>%
+    select_if(not_all_na) %>%
+    # dplyr::select(target = as.character(match_time),
+    #               everything()) %>%
+    full_join(test_baseline, by = "id") %>%
+    mutate(time = time.x,
+           timef = paste0("time", time.x)) %>%
+    dplyr::select(-time.x, -time.y) %>%
+    dplyr::select(baseline = ht, everything())
+
+  ## linear model ---------------------------------
+  lb_train <-
+    linear_brokenstick(
+      lm_formula = linear_model,
+      bks_pred = train_pred)
+
+
+  lb_test <-
+    linear_brokenstick(
+      lm_formula = linear_model,
+      bks_pred = test_pred)
+
+  ## plm model --------------------------
+  plm_model <-
+    pred_matching(
+      lb_data = lb_train,
+      lb_test = lb_test,
+      train_data = train_data,
+      test_data = test_data,
+      match_methods = match_methods,
+      match_alpha = match_alpha,
+      match_num = match_num,
+      match_time = match_tiem,
+      gamlss_formula = gamlss_formula,
+      gamsigma_formula = gamsigma_formula,
+      match_plot = match_plot,
+      predict_plot = match_plot,
+      sbj = sbj)
+
+  return(plm_model)
+}
+
+
+

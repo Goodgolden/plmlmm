@@ -1,0 +1,408 @@
+---
+title: "08_plm_function"
+author: "randy"
+date: "2022-05-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This is the same as `07_brokenstick.Rmd` as functions
+
+```{r include=FALSE}
+library("tidyverse")
+library("magrittr")
+
+library("gamlss")
+library("brokenstick")
+
+library("rjags")
+library("JMbayes")
+
+library("lme4")
+library("nlme")
+library("splines")
+
+library(gridExtra)
+library(grid)
+library(ggplot2)
+library(lattice)
+
+
+library(parallel)
+detectCores()
+
+not_all_na <- function(x) any(!is.na(x))
+not_any_na <- function(x) all(!is.na(x))
+`%!in%` <- Negate(`%in%`)
+```
+
+```{r eval=FALSE, include=TRUE}
+set.seed(555)
+
+train <- here::here("data",
+                    "epic_clean_randy.csv") %>%
+  read.csv(row.names = 1) %>%
+  mutate(id = as.factor(id)) %>%
+  filter(group == "training") %>%
+  dplyr::select(-contains(c("mean", "min", "max",
+                            "diff", "pct",
+                            "visitn", "age_n",
+                            "mutation")))
+
+test <- here::here("data",
+                   "epic_clean_randy.csv") %>%
+  read.csv(row.names = 1) %>%
+  filter(group == "testing") %>%
+  dplyr::select(-contains(c("mean", "min", "max",
+                            "race", "diff", "pct",
+                            "visitn", "age_n",
+                            "mutation")))
+
+test_baseline <- test %>%
+  group_by(id) %>%
+  arrange(time) %>%
+  slice(1L)
+
+
+train_baseline <- train %>%
+  group_by(id) %>%
+  arrange(time) %>%
+  slice(1L)
+
+save(train, test, 
+     test_baseline, 
+     train_baseline, 
+     file = "data/epic_randy_train_test.Rdata")
+
+```
+
+
+```{r}
+load("data/epic_randy_train_test.Rdata")
+```
+
+```{r}
+#' Title People-like-me methods
+#'
+#' @param outcome the outcome variable for model
+#' @param time the variable represents times
+#' @param id the variable represents id
+#' @param knots the selected time points for knots
+#' @param dataset the input dataset 
+#' @param lmm_var the variables contained in the linear model
+#' @param match_time one of the knots time points chosen for the matching up time point 
+#' @param match_num the size of the subset dataset for matching up
+#' @param spline the type of spline used in gamlss model
+#' @param df_gamlss the degrees of freedom for gamlss model
+#' @param df_gam_sigma the degrees of freedom for the variance in gamlss model
+#' @param num_cyc_gam the number of cycling for gamlss model
+#'
+#' @return
+#' @export
+#'
+people_like_me <- 
+  function(outcome,
+           time,
+           id, 
+           knots,
+           dataset,
+           lmm_var,
+           match_time = 12,
+           match_num = 10,
+           spline = "cs",
+           df_gamlss = 5,
+           df_gam_sigma = 1,
+           num_cyc_gam = 20) {
+    
+    outcome = "ht"
+    time = "time"
+    id = "id"
+    pred_time = seq(0,16)
+    knots = c(5, 10, 12)
+    dataset = train
+    lmm_var = c("sex", "genotype", "race")
+    match_time = 12
+    match_num = 10
+    spline = "cs"
+    df_gamlss = 3
+    df_gam_sigma = 1
+    num_cyc_gam = 20
+
+    ## match_time must be in the set of knots
+    if (match_time %!in% knots) {
+      stop("matching time points is not in the set of knots!")
+    }
+    
+    info <- dataset %>%
+      dplyr::select(eval(id), 
+                    eval(lmm_var)) %>%
+      unique()
+    
+    formula <- paste0(outcome, "~", time, "|", id)
+    bks <- brokenstick(formula = as.formula(formula), 
+                    data = dataset,  
+                    knots = knots)
+
+    ### bks_pred
+    bks_pred_all <- predict(bks, 
+                            group = dataset$id)
+
+    dataset_all_long_ind <- full_join(dataset, 
+                             bks_pred_all) %>%
+      dplyr::rename(ht_bks_pred = `.pred`) %>%
+      dplyr::select(eval(time), ht_bks_pred, 
+                    eval(id), eval(outcome)) %>%
+      split(f = .$id,
+            drop = TRUE) %>%
+      map(~ dplyr::select(., eval(time),
+                          ht_bks_pred, 
+                          eval(outcome)) %>%
+            remove_rownames())
+    
+    bks_pred_knots <- predict(bks, 
+                             x = pred_time, 
+                             group = dataset$id)
+    
+    
+    
+    dataset_baseline <- dataset %>% 
+      group_by(eval(id)) %>% 
+      arrange(eval(time)) %>% 
+      slice(1L) %>% 
+      dplyr::select(baseline = eval(outcome),
+                    # time = eval(time),
+                    everything()) %>% 
+      dplyr::select(-time, -wt, -age) %>%
+      ungroup() 
+    
+    
+
+    dataset_knots_long <- 
+      bks_pred_knots %>% 
+      # pivot_wider(names_from = time, 
+      #             values_from = .pred) %>%
+      select_if(not_all_na) %>%
+      # dplyr::select(target = as.character(match_time),
+      #               everything()) %>%
+      full_join(dataset_baseline, by = "id") 
+      # pivot_longer(cols = as.character(pred_time),
+      #                        names_to = "time_bks_pred",
+      #                        values_to = "outcome_bks_pred")
+    # ?pivot_longer
+    # # View(bks_pred_knots)
+    # View(dataset_knots_long)
+    
+
+    var_lmm <- paste(lmm_var, collapse = " + ")
+    # formula_lm <- paste0("`pred` ~ ", var_lmm, " + baseline")
+    
+    formula_lm <- "`.pred` ~ time * sex + baseline" 
+    
+    
+    lm_bks<- lm(as.formula(formula_lm), 
+                 data = dataset_knots_long) 
+    
+    lm_summary <-summary(lm_bks)
+    # lm_summary
+
+    lb_data <- dataset_knots_long %>%
+      mutate(lm_bks_target = predict(lm_bks,
+                                     newdata = .)) %>%
+      dplyr::select(lm_bks_target) %>%
+      cbind(dataset_knots_long)
+    
+    ggplot(lb_data, aes(time, lm_bks_target, group = id)) +
+      geom_line() +
+      geom_smooth()
+    
+    
+    result <- list()
+    for (sbj in lb_data$id) {
+      
+
+      subject <- lb_data %>% 
+        filter(id == sbj)
+      
+      lb_sub <- lb_data %>%
+        transmute(id = id,
+              ## more time points for matching 
+              ## adding the correlation
+              time = time,
+              diff = abs(lm_bks_target - subject$lm_bks_target)) %>% 
+        pivot_wider(names_from = "id",
+                    values_from = "diff") %>%
+        remove_rownames() %>%
+        column_to_rownames("time") %>%
+        colMeans() %>%
+        as.data.frame() %>% 
+        dplyr::select(diff = 1) %>%
+        rownames_to_column("id") %>%
+        arrange(diff) %>%
+        ## make it reproducible --------------
+        ## considering just here --------------
+        slice(2:match_num) %>% 
+        inner_join(dataset, by = "id")
+        
+      (formula_gamlss <- paste0(outcome, " ~ ", spline, "(", time, ", df = ", df_gamlss, ")"))
+      (formula_gamsigma <- paste0("~ ", spline, "(", time, ", df = ", df_gam_sigma, ")"))
+      
+      plm <- gamlss(as.formula(formula_gamlss),
+                   sigma.formula = as.formula(formula_gamsigma),
+               #nu.formula = ~cs(time^0.1, df=1),
+               #tau.formula = ~cs(time^0.5, df=1),
+               data = na.omit(lb_sub), 
+               n.cyc = num_cyc_gam,
+               family = NO) 
+
+      ref_txt <- 
+        centiles.pred(plm,
+                     linetype = c("centiles"),
+                     xname = "time",
+                     xvalues = c(0:17),
+                     cent = c(5, 10, 25, 
+                              50, 75, 
+                              90, 95),
+                     plot = FALSE,
+                     legend = T) %>%
+            dplyr::select(time = 1,
+                      q05 = 2,
+                      q10 = 3,
+                      q25 = 4,
+                      q50 = 5,
+                      q75 = 6,
+                      q90 = 7,
+                      q95 = 8) %>% 
+            mutate(cfint90 = q95 - q05,
+               cfint80 = q90 - q10,
+               cfint50 = q75 - q25)
+  
+  result[sbj] <- data.frame(results = nest(ref_txt))
+    }
+    
+  return(list(quantile = result,
+              pred_knot = dataset_knots_wide,
+              pred_all = dataset_all_long_ind,
+              lm_summary = lm_summary))
+  }
+```
+
+```{r message=FALSE, warning=FALSE}
+# plm_result <- 
+#   people_like_me(outcome = "ht"
+#                   time = "time",
+#                   id = "id",
+#                   knots = c(5, 10, 12),
+#                   dataset = train,
+#                   lmm_var = c("sex", "genotype", "race"),
+#                   match_time = 12,
+#                   match_num = 20,
+#                   spline = "cs",
+#                   df_gamlss = 5,
+#                   df_gam_sigma = 1,
+#                   num_cyc_gam = 20)
+save(result,
+     dataset_knots_wide,
+     dataset_all_long_ind,
+     file = "data/people_like_me_prediction_liear_time.Rdata")
+
+```
+
+
+```{r}
+# load("data/people_like_me_prediction.Rdata")
+
+
+View(result)
+View(dataset_knots_wide)
+View(dataset_all_long_ind)
+```
+
+
+```{r}
+plm_plot <- function(id,
+                     quantile = result,
+                     observation = dataset_all_long_ind) {
+  # id = "103151"
+  # quantile = result
+  # observation = dataset_all_long_ind
+  
+  quantile_ind = as.data.frame(quantile[[id]])
+  observation_ind = as.data.frame(observation[[id]])
+  
+  plot <- ggplot() +
+    geom_line(data = quantile_ind, aes(x = time, y = q05), 
+              color = "dodgerblue", linetype = "dashed",
+              alpha = 0.5) +
+    geom_line(data = quantile_ind, aes(x = time, y = q95),
+              color = "dodgerblue", linetype = "dashed",
+              alpha = 0.5) +
+    geom_ribbon(data = quantile_ind, 
+                aes(x = time, ymin = q05, ymax = q95),
+                fill = "dodgerblue", alpha = 0.5) +
+    geom_line(data = quantile_ind, aes(x = time, y = q10), 
+              color = "dodgerblue2", linetype = "dashed",
+              alpha = 0.7) +
+    geom_line(data = quantile_ind, aes(x = time, y = q90),
+              color = "dodgerblue2", linetype = "dashed",
+              alpha = 0.7) +
+    geom_ribbon(data = quantile_ind, 
+                aes(x = time, ymin = q10, ymax = q90),
+                fill = "dodgerblue2", alpha = 0.7) +
+    geom_line(data = quantile_ind, aes(x = time, y = q25), 
+              color = "dodgerblue3", linetype = "dashed",
+              alpha = 0.8) +
+    geom_line(data = quantile_ind, aes(x = time, y = q75), 
+              color = "dodgerblue3", linetype = "dashed",
+              alpha = 0.8) +
+    geom_ribbon(data = quantile_ind, 
+                aes(x = time, ymin = q25, ymax = q75),
+                fill = "dodgerblue3", alpha = 0.8) +
+    geom_line(data = quantile_ind, aes(x = time, y = q50),
+              color = "dodgerblue4", linetype = "dashed") +
+    geom_point(data = observation_ind, aes(x = time, y = ht), 
+               color = "black", size = 1) +
+    theme_bw() +
+    xlab("Time (yr)") +
+    ylab("Height (cm)") +
+    xlim(0, max(observation_ind$time) + 1)
+  
+    # print(range(observation_ind$time))
+    plot
+}
+
+```
+
+
+```{r}
+plm_plot(id = "103125")
+plm_plot(id = "103687")
+plm_plot(id = "141510")
+```
+
+
+
+
+
+```{r fig.height=5, fig.width=5, message=FALSE, warning=FALSE, include=FALSE}
+set.seed(555)
+id <- unique(train$id) %>%
+  as.character() %>%
+  head(50)
+
+
+pdf("plot/people_like_me_all_plot_timexsex_df3_ss10.pdf")
+
+plot_all <- map(id, ~plm_plot(., quantile = result,
+                              observation = dataset_all_long_ind))
+
+plot_all
+
+dev.off()
+
+```
+
+
+

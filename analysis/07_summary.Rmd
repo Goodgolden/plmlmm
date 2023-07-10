@@ -1,0 +1,147 @@
+---
+title: "06_summary"
+output: html_document
+date: "2022-08-25"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+```
+
+```{r}
+# load("package/plmlmm_simulation_output_eld_dataset1_results_20220824.Rdata")
+# load("package/plmlmm_simulation_output_mhln_dataset1_results_20220824.Rdata")
+# load("package/plmlmm_simulation_output_mhlp_dataset1_results_20220824.Rdata")
+# load("package/plmlmm_simulation_output_sgl_dataset1_results_20220824.Rdata")
+```
+
+
+```{r}
+(eld_train_bias <- 
+  test_eld %>%
+  # output_eld %>%
+  unlist(recursive = FALSE) %>%
+  map("centiles_observed") %>% ##View())
+  map("bias") %>%
+  # map("coverage50") %>%
+  # map("coverage80") %>%
+  # map("coverage95") %>%
+  # map(~.$bias ^2) %>% 
+  map(~mean(., na.rm = TRUE)) %>%
+  unlist() %>% 
+  mean())
+
+## training ====================================================================
+## bias [1] 2.144855
+## mse [1] 13.65187 
+## mse_sqrt [1] 3.694844
+## coverage50 [1] 0.5511858
+## coverage80 [1] 0.7504341
+## coverage95 [1] 0.8874763
+
+
+## testing =====================================================================
+## bias [1] 2.629898
+## mse [1] 16.67852
+## mse_sqrt [1] 4.083934
+## coverage50 [1] 0.4927358
+## coverage80 [1] 0.8089897
+## coverage95 [1] 0.9264573
+
+
+(mhln_train_bias <- 
+   test_mhln %>%
+   # output_mhln %>%
+  unlist(recursive = FALSE) %>%
+  map("centiles_observed") %>%
+   # map("bias") %>% 
+  # map("coverage50") %>%
+  # map("coverage80") %>%
+  # map("coverage95") %>%
+  # map(~.$bias ^2) %>% 
+  map(~mean(., na.rm = TRUE)) %>%
+  unlist() %>% mean())
+## training ===============================
+## bias [1] 3.694844
+## mse [1] 13.76908
+## msed [1] 3.710671
+## coverage50 [1] 0.5456177
+## coverage80 [1] 0.7650568
+## coverage95 [1] 0.9232181
+
+## testing ================================
+## bias [1] 2.820175
+## mse [1] [1] 18.46293
+## msed [1] 4.296851
+## coverage50 [1] 0.5028029
+## coverage80 [1] 0.8036326
+## coverage95 [1] 0.8954156
+
+
+(mhlp_train_bias <-
+   test_mhlp %>%
+  ## output_mhlp %>%
+  unlist(recursive = FALSE) %>%
+  map("centiles_observed") %>%
+  map("bias") %>%
+  # map("coverage50") %>%
+  # map("coverage80") %>%
+  # map("coverage95") %>%
+  # map(~.$bias ^2) %>%
+  map(~mean(., na.rm = TRUE)) %>%
+  unlist() %>% mean(na.rm = TRUE))
+
+
+
+## training==================================================================
+## bias [1] 2.34297
+## mse [1] 12.79703
+## msed [1] 3.577294
+## coverage50 [1] 0.6300067
+## coverage80 [1] 0.8791583
+## coverage95 [1] 0.9608376
+
+## testing ===================================================================
+## bias [1] 2.151733
+## mse [1] 15.1717
+## msed [1] 3.877294
+## coverage50 [1] 0.6262008
+## coverage80 [1] 0.8801583
+## coverage95 [1] 0.95923561
+
+(sgl_train_bias <- 
+   test_sgl %>%
+   ## output_sgl10_n10 %>%
+  unlist(recursive = FALSE) %>%
+  map("centiles_observed") %>%
+  # map("bias") %>%
+  # map("coverage50") %>%
+  # map("coverage80") %>%
+  # map("coverage95") %>%
+  map(~.$bias ^2) %>%
+  map(~mean(., na.rm = TRUE)) %>%
+  unlist() %>% mean())
+## training ==================================================================
+## bias [1] 2.193093
+## mse [1] 13.775
+## msed [1] 3.711469
+## coverage50 [1] 0.5536698
+## coverage80 [1] 0.8104584
+## coverage95 [1] 0.9266532
+## testing ===================================================================
+## bias [1] 2.7741
+## mse [1] 17.64214
+## msed [1] 4.200255
+## coverage50 [1] 0.5100927
+## coverage80 [1] 0.7562174
+## coverage95 [1] 0.8497183
+
+
+cat("the bias\n")
+eld_obs_bias
+mhln_obs_bias
+mhlp_train_bias
+sgl_train_bias
+```
+

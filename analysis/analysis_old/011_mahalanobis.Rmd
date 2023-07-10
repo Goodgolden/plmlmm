@@ -1,0 +1,516 @@
+
+mahalanobis distance 
+
+
+```{r include=FALSE}
+load("data/linear_brokenstick_prediction_data.Rdata")
+getwd()
+
+View(lb_data)
+
+outcome <- "ht"
+time <- "time"
+id <- "id"
+pred_time <- c(2, 4, 6, 8, 10, 12, 14)
+knots <- c(5, 10, 12)
+dataset <- train
+lmm_var <- c("sex", "genotype", "race")
+match_time <- 12
+match_num <- 30
+spline <- "cs"
+df_gamlss <- 3
+df_gam_sigma <- 1
+num_cyc_gam <- 10
+alpha <- 0.5
+
+
+## a list to store the each individual list
+result_mahalanobis <- array()
+id_sub_mahalanobis <- list()
+bias_mahalanobis <- list()
+pred_mahalanobis <- array()
+coverage50 <- list()
+coverage80 <- list()
+coverage95 <- list()
+
+
+pdf("plot/people_like_me_all_matching_trajectories_mahaladanoid_chisq_uncenter_df_fixed_a03.pdf")
+for (i in 1:length(unique(lb_data$id))) {
+
+  sbj <- unique(lb_data$id)[i]
+  subject <- lb_data %>%
+    filter(id == sbj)
+  # View(subject)
+  ind_time <- train %>%
+    filter(id == sbj)
+
+  lb_sub <- lb_data %>%
+    transmute(id = id,
+              ## more time points for matching
+              ## adding the correlation
+              time = time,
+              diff = lm_bks_target - subject$lm_bks_target) %>%
+    pivot_wider(names_from = "id",
+                values_from = "diff") %>%
+    remove_rownames() %>%
+    column_to_rownames("time")
+  
+  
+  # ?mahalanobis
+  lb_sub_mahalanobis <- lb_sub %>%
+    ## Mahalanobis distance using the chisq pvalues
+    as.matrix() %>%
+    t() %>%
+    # Wed Jun 22 13:56:38 2022 ------------------------------
+    ## here is the problem?????????
+    mahalanobis(0, cov(.)) %>%
+    # mahalanobis(colMeans(.), cov(.)) %>%
+    as.data.frame() %>%
+    mutate(pvalue = pchisq(., df = 7, lower.tail = FALSE)) %>%
+    filter(pvalue > alpha) %>%
+    dplyr::select(malahanobis = 1, pvalue = 2) %>%
+    rownames_to_column("id") %>%
+            # arrange(diff) %>%
+            # ## make it reproducible --------------
+            # ## considering just here --------------
+            # slice(1:match_num) %>%
+            inner_join(dataset, by = "id")
+ 
+
+  # require(rrcov)
+  # mcd <- rrcov::CovMcd(lb_sub) 
+  # # get mcd estimate of location
+  # mean_mcd <- mcd@raw.center
+  # # get mcd estimate scatter
+  # cov_mcd <- mcd@raw.cov
+  # # get inverse of scatter
+  # cov_mcd_inv <- solve(cov_mcd)
+  
+  
+   id_sub[[i]] <- unique(lb_sub$id) %>% unlist()
+
+   ## plot out the matchings with the target -------------------------------------
+   plot_mahalanobis <- ggplot(lb_sub_mahalanobis) +
+      geom_line(aes(x = time, y = ht,
+                    group = id),
+                    color = "grey",
+                linetype = "dashed") +
+      geom_line(data = filter(train, id == sbj),
+                aes(x = time, y = ht),
+                color = "darkblue",
+                size = 1) +
+      ggtitle(sbj) +
+      theme_bw()
+
+   print(plot_mahalanobis)
+
+  (formula_gamlss <- paste0(outcome, " ~ ", spline, "(", time, ", df = ", df_gamlss, ")"))
+  (formula_gamsigma <- paste0("~ ", spline, "(", time, ", df = ", df_gam_sigma, ")"))
+  # fit a gamlss model flexible enough to capture the details
+  plm <-
+    gamlss(as.formula(formula_gamlss),
+           sigma.formula = as.formula(formula_gamsigma),
+           # nu.formula = ~cs(time^0.1, df=1),
+           # tau.formula = ~cs(time^0.5, df=1),
+           data = na.omit(lb_sub_mahalanobis),
+           n.cyc = num_cyc_gam,
+           family = NO)
+  
+  pred_mahalanobis <- centiles.pred(plm,
+                           linetype = c("centiles"),
+                           xname = "time",
+                           xvalues = ind_time$time,
+                           cen = c(2.5, 10, 25, 50, 75, 90, 97.5),
+                           plot = FALSE,
+                           legend = TRUE) %>%
+    cbind(actual = ind_time$ht) %>% 
+    as.data.frame() %>%
+    ## ================== defintion of bias and mse =====================
+    ## confidence interval is variance or variability 
+    ## bias is the accuracy ????
+    mutate(coverage50 = ifelse(actual >= `25` & actual <= `75`, 1, 0),
+           coverage80 = ifelse(actual >= `10` & actual <= `90`, 1, 0),
+           coverage95 = ifelse(actual >= `2.5` & actual <= `97.5`, 1, 0),
+           # mse = (actual - `50`)^2,
+           # biassq = bias^2,
+           # var = mse - bias^2,
+           bias = abs(actual - `50`))
+    
+  
+
+  (coverage50[i] <- mean(pred_mahalanobis$coverage50))
+  (coverage80[i] <- mean(pred_mahalanobis$coverage80))
+  (coverage95[i] <- mean(pred_mahalanobis$coverage95))
+  # mse_mahalanobis[i] <- sum((pred_mahalanobis$`50` - pred_mahalanobis$actual)^2)
+  bias_mahalanobis[i] <- sum(abs(pred_mahalanobis$`50` - pred_mahalanobis$actual))
+  
+  
+  ## which should we use ---------------------------------------------------------
+  ## coverage rate???
+  
+  ref_txt <-
+    centiles.pred(plm,
+      linetype = c("centiles"),
+      xname = "time",
+      xvalues = c(0:17),
+      cent = c(5, 10, 25,
+               50, 75, 90, 95),
+      plot = FALSE,
+      legend = TRUE) %>%
+    dplyr::select(time = 1,
+                  q05 = 2,
+                  q10 = 3,
+                  q25 = 4,
+                  q50 = 5,
+                  q75 = 6,
+                  q90 = 7,
+                  q95 = 8) %>%
+    mutate(cfint90 = q95 - q05,
+           cfint80 = q90 - q10,
+           cfint50 = q75 - q25)
+
+  result_mahalanobis[i] <- data.frame(results = nest(ref_txt))
+  
+}
+
+# return(list(quantile = result,
+#             pred_knot = dataset_knots_wide,
+#             pred_all = dataset_all_long_ind,
+#             lm_summary = lm_summary))
+
+
+# lm_summary
+# plm_plot
+```
+
+```{r echo=TRUE}
+save(result_mahalanobis,
+     pred_mahalanobis,
+     # mse_mahalanobis,
+     bias_mahalanobis,
+     coverage50,
+     coverage80,
+     coverage95,
+     id_sub_mahalanobis,
+     # dataset_knots_wide,
+     # dataset_all_long_ind,
+     file = "data/people_like_me_prediction_multiple_mahalanobis_chisq_uncenter_df_fixed_a03.Rdata")
+
+load("data/people_like_me_prediction_multiple_mahalanobis_chisq_uncenter_df_fixed_a03.Rdata")
+     
+# result <- map(result, as.data.frame)
+# sum(unlist(mse_mahalanobis)) / nrow(train)
+sum(unlist(bias_mahalanobis)) / nrow(train)
+# sum(unlist(mse_mahalanobis - bias_mahalanobis^2)) / nrow(train)
+```
+
+
+selection for the p-values in the hypothesis test:
+in the discussion, bias and variance 
+alpha == 0.3, mse == 22.43331, bias == 3.452368; 
+alpha == 0.5, mse == 20.37867, bias == ; 
+alpha == 0.7, mse == 19.27292, bias == ; 
+
+what is the average matching number 30
+
+
+
+use the fixed value,
+
+match_num == 5,  mse ==, bias == ; 
+match_num == 10, mse == 43.9266, bias == ; 
+match_num == 15, mse == 39.9628, bias == ; 
+match_num == 20, mse == 40.08991, bias == ; 
+mathc_num == 30, mse == 40.64112, bias == ; 
+
+```{r echo=TRUE}
+plm_plot <- function(id,
+                     quantile = result_mahalanobis,
+                     observation = dataset_all_long_ind) {
+  # quantile = result
+  # observation = dataset_all_long_ind
+  # View(result[[1]])
+
+  quantile_ind = as.data.frame(quantile[[id]])
+  observation_ind = as.data.frame(observation[[id]])
+  title <- names(observation)[[id]]
+  # View(quantile_ind)
+  # View(observation_ind)
+  
+  plot <- ggplot() +
+    geom_line(data = quantile_ind, aes(x = time, y = q05), 
+              color = "dodgerblue", linetype = "dashed",
+              alpha = 0.5) +
+    geom_line(data = quantile_ind, aes(x = time, y = q95),
+              color = "dodgerblue", linetype = "dashed",
+              alpha = 0.5) +
+    geom_ribbon(data = quantile_ind, 
+                aes(x = time, ymin = q05, ymax = q95),
+                fill = "dodgerblue", alpha = 0.5) +
+    geom_line(data = quantile_ind, aes(x = time, y = q10), 
+              color = "dodgerblue2", linetype = "dashed",
+              alpha = 0.7) +
+    geom_line(data = quantile_ind, aes(x = time, y = q90),
+              color = "dodgerblue2", linetype = "dashed",
+              alpha = 0.7) +
+    geom_ribbon(data = quantile_ind, 
+                aes(x = time, ymin = q10, ymax = q90),
+                fill = "dodgerblue2", alpha = 0.7) +
+    geom_line(data = quantile_ind, aes(x = time, y = q25), 
+              color = "dodgerblue3", linetype = "dashed",
+              alpha = 0.8) +
+    geom_line(data = quantile_ind, aes(x = time, y = q75), 
+              color = "dodgerblue3", linetype = "dashed",
+              alpha = 0.8) +
+    geom_ribbon(data = quantile_ind, 
+                aes(x = time, ymin = q25, ymax = q75),
+                fill = "dodgerblue3", alpha = 0.8) +
+    geom_line(data = quantile_ind, aes(x = time, y = q50),
+              color = "dodgerblue4", linetype = "dashed") +
+    geom_point(data = observation_ind, aes(x = time, y = ht), 
+               color = "black", size = 1) +
+    theme_bw() +
+    xlab("Time (yr)") +
+    ylab("Height (cm)") +
+    ggtitle(title) +
+    xlim(0, max(observation_ind$time) + 1)
+  
+    # print(range(observation_ind$time))
+    plot
+}
+```
+
+
+```{r echo=TRUE}
+pdf("plot/people_like_me_all_plot_multiple_time_mahalanobis_chisq_uncenter_df_fixed_a03.pdf")
+plot_all <- map(1:length(unique(lb_data$id)), 
+                ~plm_plot(., quantile = result_mahalanobis,
+                              observation = dataset_all_long_ind))
+plot_all
+dev.off()
+```
+
+
+```{r include=FALSE}
+library("tidyverse")
+library("magrittr")
+
+library("gamlss")
+library("brokenstick")
+
+library("rjags")
+library("JMbayes")
+
+library("lme4")
+library("nlme")
+library("splines")
+
+library(gridExtra)
+library(grid)
+library(ggplot2)
+library(lattice)
+
+
+library(parallel)
+detectCores()
+
+not_all_na <- function(x) any(!is.na(x))
+not_any_na <- function(x) all(!is.na(x))
+`%!in%` <- Negate(`%in%`)
+```
+
+
+## Mahalanobis distance 
+
+```{r}
+## a list to store the each individual list
+result_mahalanobis <- array()
+id_sub_mahalanobis <- list()
+mse_mahalanobis <- list()
+pb <- txtProgressBar(min = 0,      # Minimum value of the progress bar
+                     max = length(unique(lb_data$id)), # Maximum value of the progress bar
+                     style = 3,    # Progress bar style (also available style = 1 and style = 2)
+                     width = 50,   # Progress bar width. Defaults to getOption("width")
+                     char = "=")   # Character used to create the bar
+```
+
+
+
+```{r}
+pdf("plot/people_like_me_all_matching_trajectories_mahaladanoid_ss20.pdf")
+for (i in 1:length(unique(lb_data$id))) {
+  sbj <- unique(lb_data$id)[i]
+  subject <- lb_data %>%
+    filter(id == sbj)
+
+  lb_sub <- lb_data %>% 
+    transmute(id = id,
+              ## more time points for matching
+              ## adding the correlation
+              time = time,
+              diff = abs(lm_bks_target - subject$lm_bks_target)) %>%
+    pivot_wider(names_from = "id",
+                values_from = "diff") %>% 
+    remove_rownames() %>%
+    column_to_rownames("time")
+  
+  lb_sub_mahalanobis <- lb_sub %>%
+    as.matrix() %>%
+    t() %>%
+    mahalanobis(colMeans(.), cov(.)) %>% 
+    # View()
+    ## Now it is a vector of Mahalanobis distance
+    as.data.frame() %>%
+    dplyr::select(diff = 1) %>%
+    rownames_to_column("id") %>%
+            arrange(diff) %>%
+            ## make it reproducible --------------
+            ## considering just here --------------
+            slice(1:match_num) %>%
+            inner_join(dataset, by = "id") 
+  
+   id_sub[[i]] <- unique(lb_sub$id) %>% unlist()
+
+
+   ## plot out the matchings with the target -------------------------------------
+   plot_mahalanobis <- ggplot(lb_sub_mahalanobis) +
+      geom_line(aes(x = time, y = ht,
+                    group = id),
+                    color = "grey",
+                linetype = "dashed") +
+      geom_line(data = filter(train, id == sbj),
+                aes(x = time, y = ht),
+                color = "darkblue",
+                size = 1) +
+      ggtitle(sbj) +
+      theme_bw()
+
+   print(plot_mahalanobis)
+
+  (formula_gamlss <- paste0(outcome, " ~ ", spline, "(", time, ", df = ", df_gamlss, ")"))
+  (formula_gamsigma <- paste0("~ ", spline, "(", time, ", df = ", df_gam_sigma, ")"))
+  # fit a gamlss model flexible enough to capture the details
+  plm <-
+    gamlss(as.formula(formula_gamlss),
+           sigma.formula = as.formula(formula_gamsigma),
+           # nu.formula = ~cs(time^0.1, df=1),
+           # tau.formula = ~cs(time^0.5, df=1),
+           data = na.omit(lb_sub_mahalanobis),
+           n.cyc = num_cyc_gam,
+           family = NO)
+
+  ref_txt <-
+    centiles.pred(plm,
+      linetype = c("centiles"),
+      xname = "time",
+      xvalues = c(0:17),
+      cent = c(5, 10, 25,
+               50, 75, 90, 95),
+      plot = FALSE,
+      legend = TRUE) %>%
+    dplyr::select(time = 1,
+                  q05 = 2,
+                  q10 = 3,
+                  q25 = 4,
+                  q50 = 5,
+                  q75 = 6,
+                  q90 = 7,
+                  q95 = 8) %>%
+    mutate(cfint90 = q95 - q05,
+           cfint80 = q90 - q10,
+           cfint50 = q75 - q25)
+
+  result_mahalanobis[i] <- data.frame(results = nest(ref_txt))
+  setTxtProgressBar(pb, i)
+  
+}
+close(pb)
+# return(list(quantile = result,
+#             pred_knot = dataset_knots_wide,
+#             pred_all = dataset_all_long_ind,
+#             lm_summary = lm_summary))
+dev.off()
+
+
+# lm_summary
+# plm_plot
+```
+
+```{r}
+save(result,
+     id_sub_mahalanobis,
+     dataset_knots_wide,
+     dataset_all_long_ind,
+     file = "data/people_like_me_prediction_multiple_mahalanobis_ss20.Rdata")
+
+load("data/people_like_me_prediction_multiple_mahalanobis_ss20.Rdata")
+# result <- map(result, as.data.frame)
+View(result)
+```
+
+
+```{r}
+plm_plot <- function(id,
+                     quantile = result,
+                     observation = dataset_all_long_ind) {
+  # quantile = result
+  # observation = dataset_all_long_ind
+  # View(result[[1]])
+
+  quantile_ind = as.data.frame(quantile[[id]])
+  observation_ind = as.data.frame(observation[[id]])
+  title <- names(observation)[[id]]
+  # View(quantile_ind)
+  # View(observation_ind)
+  
+  plot <- ggplot() +
+    geom_line(data = quantile_ind, aes(x = time, y = q05), 
+              color = "dodgerblue", linetype = "dashed",
+              alpha = 0.5) +
+    geom_line(data = quantile_ind, aes(x = time, y = q95),
+              color = "dodgerblue", linetype = "dashed",
+              alpha = 0.5) +
+    geom_ribbon(data = quantile_ind, 
+                aes(x = time, ymin = q05, ymax = q95),
+                fill = "dodgerblue", alpha = 0.5) +
+    geom_line(data = quantile_ind, aes(x = time, y = q10), 
+              color = "dodgerblue2", linetype = "dashed",
+              alpha = 0.7) +
+    geom_line(data = quantile_ind, aes(x = time, y = q90),
+              color = "dodgerblue2", linetype = "dashed",
+              alpha = 0.7) +
+    geom_ribbon(data = quantile_ind, 
+                aes(x = time, ymin = q10, ymax = q90),
+                fill = "dodgerblue2", alpha = 0.7) +
+    geom_line(data = quantile_ind, aes(x = time, y = q25), 
+              color = "dodgerblue3", linetype = "dashed",
+              alpha = 0.8) +
+    geom_line(data = quantile_ind, aes(x = time, y = q75), 
+              color = "dodgerblue3", linetype = "dashed",
+              alpha = 0.8) +
+    geom_ribbon(data = quantile_ind, 
+                aes(x = time, ymin = q25, ymax = q75),
+                fill = "dodgerblue3", alpha = 0.8) +
+    geom_line(data = quantile_ind, aes(x = time, y = q50),
+              color = "dodgerblue4", linetype = "dashed") +
+    geom_point(data = observation_ind, aes(x = time, y = ht), 
+               color = "black", size = 1) +
+    theme_bw() +
+    xlab("Time (yr)") +
+    ylab("Height (cm)") +
+    ggtitle(title) +
+    xlim(0, max(observation_ind$time) + 1)
+  
+    # print(range(observation_ind$time))
+    plot
+}
+```
+
+
+```{r}
+pdf("plot/people_like_me_all_plot_multiple_time_mahalanobis_ss20.pdf")
+plot_all <- map(1:length(unique(train$id)), ~plm_plot(., quantile = result,
+                              observation = dataset_all_long_ind))
+plot_all
+dev.off()
+```

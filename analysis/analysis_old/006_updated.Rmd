@@ -1,0 +1,544 @@
+---
+title: "06_update"
+author: "randy"
+date: '2022-04-19'
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message=FALSE, warning=FALSE)
+```
+
+
+```{r include=FALSE}
+library(tidyverse)
+library(magrittr)
+
+library(MASS)
+library(here)
+
+library(brokenstick)
+library(gamlss)
+library(lme4)
+
+library(data.table)
+library(gtsummary)
+library(flextable)
+library(splines)
+
+
+library(ggridges)
+```
+
+
+1. Redo table 1 with final sample  
+
+```{r include=FALSE}
+table0 <- here::here("data", "epic_table1.csv") %>%
+  read.csv(row.names = 1) %>%
+  unique() %>%
+  dplyr::select(-id) %>%
+  mutate(
+    ethnic = case_when(ethnic == 1 ~ "Hispanic",
+                     ethnic == 2 ~ "Non-Hispanic"),
+    race = case_when(race == 1 ~ "White",
+                     race != 1 ~ "Other"),
+    sex = case_when(sex == "F" ~ "Female",
+                    sex == "M" ~ "Male"),
+    age_diff = age_max - age_min) %>% 
+  dplyr::select(
+         Genotype = genotype,
+         Gender = sex,
+         Race = race,
+         Ethnicity = ethnic,
+         "Visit number" = visitn,
+         "Age at registration, years" = age_min, 
+         "Age at end of follow-up, years" = age_max, 
+         "Follow-up, years" = age_diff,
+         "Height at registration, cm" = h_min,
+         # "Height mean" = h_mean, 
+         # "Weight mean" = w_mean,
+         "Weight at registration, kg" = w_min) %>% 
+  ## select all the variables for table1
+  tbl_summary() %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Variable**") %>%
+  # update the column header
+  bold_labels() %>%
+  italicize_labels() %>%
+  as_flex_table() %>%
+  flextable::bold(part = "header") %>% 
+  ## auto adjust the column widths 
+  flextable::autofit()
+
+table1 <- here::here("data", "epic_table1.csv") %>%
+  read.csv(row.names = 1) %>%
+  unique() %>%
+  dplyr::select(-id) %>%
+  mutate(
+    ethnic = case_when(ethnic == 1 ~ "Hispanic",
+                     ethnic == 2 ~ "Non-Hispanic"),
+    race = case_when(race == 1 ~ "White",
+                     race != 1 ~ "Other"),
+    sex = case_when(sex == "F" ~ "Female",
+                    sex == "M" ~ "Male"),
+    age_diff = age_max - age_min) %>% 
+  dplyr::select(group,
+         Genotype = genotype,
+         Gender = sex,
+         Race = race,
+         Ethnicity = ethnic,
+         "Visit number" = visitn,
+         "Age at registration, years" = age_min, 
+         "Age at end of follow-up, years" = age_max, 
+         "Follow-up, years" = age_diff,
+         "Height at registration, cm" = h_min,
+         # "Height mean" = h_mean, 
+         # "Weight mean" = w_mean,
+         "Weight at registration, kg" = w_min) %>% 
+  ## select all the variables for table1
+  tbl_summary(by = group) %>%
+  ## just display all the variables in one column
+  modify_header(label = "**Variable**") %>%
+  # update the column header
+  bold_labels() %>%
+  italicize_labels() %>%
+  as_flex_table() %>%
+  flextable::bold(part = "header") %>% 
+  ## auto adjust the column widths 
+  flextable::autofit()
+```
+
+
+```{r}
+table0
+table1
+
+## save pptx -----------------------------------------------
+## flextable can be saved directly to powerpoints
+flextable::save_as_pptx(
+  table0, 
+  path = "figure/01_table0.pptx")
+flextable::save_as_pptx(
+  table1, 
+  path = "figure/01_table1.pptx")
+```
+
+
+2. Refine spline model for training dataset. 
+
+Try spline model with 3 inner knots set at percentiles (quartiles) too 
+and compare to the splines you had tried before. 
+
+```{r}
+train <- here::here("data", 
+                    "epic",
+                    "epic_clean_randy.csv") %>%
+  read.csv(row.names = 1) %>% 
+  mutate(id = as.factor(id)) %>%
+  filter(group == "training")
+
+test <- here::here("data", 
+                   "epic",
+                   "epic_clean_randy.csv") %>%
+  read.csv(row.names = 1) %>%
+  filter(group == "testing")
+
+basetest <- test %>% 
+  group_by(id) %>% 
+  arrange(time) %>% 
+  slice(1L) 
+
+View(train)
+```
+
+
+```{r}
+# lmeControl
+ctrl <- lmeControl(opt = 'optim')
+
+## the original mod2_2_4 in file "04_model_fit.Rmd"
+fit2_0 <- lme(ht ~ bs(time, knots = c(10, 15), 
+                      degree = 3,
+                      intercept = FALSE) * sex +  genotype - 1,
+              control = ctrl,
+              random = ~ 1| id,
+              data = train)
+
+fit2_1 <- lme(ht ~ bs(time, knots = c(10, 12), 
+                      degree = 3,
+                      intercept = FALSE) * sex +  genotype - 1,
+              control = ctrl,
+              random = ~ 1| id,
+              data = train)
+
+fit2_2 <- lme(ht ~ bs(time, df = 5, 
+                      degree = 3,
+                      intercept = FALSE) * sex +  genotype - 1,
+              control = ctrl,
+              random = ~ 1| id,
+              data = train)
+
+fit3_0 <- lme(ht ~ bs(time, df = 6, 
+                      degree = 3,
+                      intercept = FALSE) * sex +  genotype - 1,
+              control = ctrl,
+              random = ~ 1| id,
+              data = train)
+```
+
+
+```{r}
+get_tag <- function(fit, data1 = train) {
+  tidy <- broom.mixed::tidy(fit)
+  glance <- broom.mixed::glance(fit)
+  augment <- broom.mixed::augment(fit) %>%
+    dplyr::select(time, .fitted, sex) %>%
+    unique()
+  
+  plot1 <- ggplot() +
+        geom_smooth(data = data1, 
+                    aes(x = time, 
+                        y = ht, 
+                        group = sex, 
+                        color = sex)) +
+        geom_smooth(data = augment, 
+                    aes(x = time, y = .fitted, 
+                        group = sex),
+                    linetype = 2,
+                    size = 0.5) +
+        xlab("Age") +
+        theme_bw() +
+    theme(legend.position = "none")
+
+
+  return(list(tidy = tidy, 
+              glance = glance, 
+              augment = augment,
+              plot = plot1))
+}
+```
+
+```{r}
+tag2_0 <- get_tag(fit = fit2_0)
+tag2_1 <- get_tag(fit = fit2_1)
+tag2_2 <- get_tag(fit = fit2_2)
+tag3_0 <- get_tag(fit = fit3_0)
+
+glance_all <- map_dfr(list(tag2_0, tag2_1,
+                    tag2_2, tag3_0),
+                  "glance") %>%
+  mutate(model = c("fit2_0", "fit2_1", 
+                   "fit2_2", "fit3_0")) %>%
+  dplyr::select(model, everything())
+
+glance_all
+```
+
+3. plot the predicted/expected means. 
+
+```{r echo=FALSE, fig.height=9, fig.width=10, message=FALSE, warning=FALSE}
+# plot_all <- map(list(tag2_0, tag2_1,
+#                     tag2_2, tag3_0),
+#                   "plot")
+# unlist(plot_all)
+library("gridExtra")
+grid.arrange(tag2_0$plot, tag2_1$plot,
+             tag2_2$plot, tag3_0$plot,
+             ncol = 2, nrow = 2)
+```
+
+4. For brokenstick model try time for a anchoring of 10 and 12  
+
+```{r}
+# View(brokenstick)
+# View(brokenstick::brokenstick_bridge)
+
+bks1 <- brokenstick(formula = ht ~ time | id,
+                    data = train,
+                    knots = c(10, 15),
+                    method = "lmer")
+
+bks10 <- brokenstick(formula = ht ~ time | id,
+                    data = train,
+                    subjid = train$id,
+                    knots = c(10, 15))
+
+est1_knots <- predict(bks1, 
+                     x = "knots", 
+                     group = train$id)
+est1_all <- predict(bks1, 
+                   group = train$id)
+
+
+bks2 <- brokenstick(formula = ht ~ time | id,
+                    data = train,
+                    subjid = train$id,
+                    knots = c(10, 12))
+est2_knots <- predict(bks2, 
+                     x = "knots", 
+                     group = train$id)
+est2_all <- predict(bks2, 
+                   group = train$id)
+
+
+bks31 <- brokenstick(formula = ht ~ time | id,
+                    data = train,
+                    subjid = train$id,
+                    knots = c(10, 12, 15))
+
+bks32 <- brokenstick(formula = ht ~ time | id,
+                    data = train, 
+                    knots = c(10, 12, 15),
+                    seed = 555)
+
+est31_knots <- predict(bks31, 
+                     x = "knots", 
+                     group = train$id)
+
+est31_all <- predict(bks31, 
+                   group = train$id)
+
+est32_knots <- predict(bks32, 
+                     x = "knots", 
+                     group = train$id)
+est32_all <- predict(bks32, 
+                   group = train$id)
+```
+
+the biometrics paper,
+
+
+```{r}
+summary(bks31)
+summary(bks32)
+```
+
+## the estimated c(10, 12) and c(10, 15)
+
+```{r fig.height=5, fig.width=5}
+plot_bks1 <- ggplot() +
+  geom_smooth(data = train, 
+              aes(x = time, y = ht, 
+                  group = sex),
+              alpha = 0.3,
+              size = 1,
+              color = "darkgreen") +
+  geom_smooth(data = est1_all, 
+              aes(x = time, y = .pred, 
+                  group = sex),
+              color = "brown",
+              linetype = 2,
+              size = 0.5) +
+  geom_smooth(data = est2_all, 
+                    aes(x = time, y = .pred, 
+                        group = sex),
+              color = "magenta",
+              linetype = 4,
+              size = 0.5) +
+  xlab("Age") +
+  theme_bw()
+
+plot_bks1
+```
+
+
+The estimated for 2 **c(10, 12)** and 3 c(10, 12, 15) knots
+
+## try c(10, 13), c(10, 14) ---------------------
+
+```{r fig.height=5, fig.width=5}
+plot_bks2 <- ggplot() +
+  geom_smooth(data = train, 
+              aes(x = time, y = ht, 
+                  group = sex),
+              alpha = 0.3,
+              size = 1,
+              color = "darkgreen") +
+  geom_smooth(data = est32_all, 
+              aes(x = time, y = .pred, 
+                  group = sex),
+              color = "brown",
+              linetype = 2,
+              size = 0.5) +
+  geom_smooth(data = est2_all, 
+                    aes(x = time, y = .pred, 
+                        group = sex),
+              color = "magenta",
+              linetype = 4,
+              size = 0.5) +
+  xlab("Age") +
+  theme_bw()
+
+plot_bks2
+
+```
+
+
+```{r}
+Kk <- c(5, 10, 12, 15)
+
+Kplot <- function(K,
+                  seed = 555,
+                  form = "ht ~ time | id") {
+  
+  bks3n <- brokenstick(formula = as.formula(form),
+                    data = train, 
+                    knots = Kk,
+                    method = "lmer")
+  # ?brokenstick
+
+  est_knots <- predict(bks3n, 
+                     x = "knots", 
+                     group = train$id)
+  est_all <- predict(bks3n, 
+                   group = train$id)
+  
+  plot_bks <- ggplot() +
+    geom_smooth(data = train, 
+                aes(x = time, y = ht, 
+                    group = sex),
+                alpha = 0.3,
+                size = 1,
+                color = "darkgreen") +
+    geom_smooth(data = est_all, 
+                aes(x = time, y = .pred, 
+                    group = sex),
+                color = "brown",
+                linetype = 2,
+                size = 0.5) +
+    xlab("Age") +
+    theme_bw()
+  
+  return(list(model = bks3n,
+              est.knot = est_knots,
+              est.all = est_all,
+              plot = plot_bks))
+}
+
+bksn <- Kplot(K = Kk)
+bksn$plot
+```
+
+```{r fig.height=3, fig.width=5}
+tag2_1 <- get_tag(fit = fit2_1)
+
+bks2_1 <- Kplot(K = c(10, 12))
+bks2_1$plot
+
+grid.arrange(tag2_1$plot,
+             bks2_1$plot,
+             ncol = 2)
+```
+
+
+```{r fig.height=3, fig.width=5}
+plot <- ggplot() +
+  geom_line(data = train, 
+              aes(x = time, 
+                  y = ht, 
+                  group = id),
+            color = "grey",
+              alpha = 0.3,
+              size = 0.2) +
+  geom_smooth(data = bks2_1$est.all, 
+                aes(x = time, y = .pred),
+                color = "brown",
+                linetype = 2,
+                size = 0.5) +
+        geom_smooth(data = tag2_1$augment, 
+                    aes(x = time, y = .fitted, 
+                        group = sex),
+                    linetype = 3,
+                    color = "purple",
+                    size = 0.5) +
+  xlab("Age") +
+  theme_bw() 
+
+plot + facet_wrap("sex")
+```
+
+
+
+5. Make progress, as able with the latex file of the paper. 
+
+Start drafting a description of the dataset using Moss and Rice’s papers: 
+one paragraph to describe the study and a second to include descriptive statistics.   
+ 
+
+```{r fig.height=5, fig.width=5, include=FALSE}
+# install.packages("IrregLong")
+library(IrregLong)
+
+abacus.plot(n = 10,
+  time = "time",
+  id = "id",
+  data = train,
+  tmin = 0,
+  tmax = 16,
+  # xlab.abacus = "Time",
+  # ylab.abacus = "Subject",
+  pch.abacus = 16,
+  col.abacus = 1)
+```
+
+
+```{r}
+set.seed(555)
+f_train <- train %>%
+  filter(sex == "F")
+
+m_train <- train %>%
+  filter(sex == "M")
+
+sub_id <- c(sample(f_train$id, size = 10, replace = FALSE),
+            sample(m_train$id, size = 10, replace = FALSE))
+
+subtrain <- train %>%
+  filter(id %in% sub_id) 
+
+```
+
+
+```{r fig.height=3, fig.width=5}
+abacus0 <- ggplot(subtrain, 
+       aes(y = as.factor(id), x = time, 
+           group = sex,
+           fill = sex, color = sex)) +
+  geom_point(alpha = 0.5, size = 3) + 
+  theme_bw() + 
+  theme(legend.position = "none") +
+  xlab("Time") +
+  ylab("ID")
+
+abacus0
+
+ggsave("figure/abacus.png")
+```
+
+
+```{r fig.height=5, fig.width=5}
+ind_plot <- 
+  ggplot(subtrain, 
+         aes(y = ht, 
+             x = time, 
+             group = id,
+             col = sex)) +
+  geom_point(size = 0.5) +
+  geom_line() +
+  theme_bw() +
+  theme(legend.position = "none") +
+  facet_wrap(id ~ sex, nrow = 5)
+
+ind_plot
+
+ggsave("figure/sample_plot.png")
+```
+
+
+
+Dynamic Predictions in Bayesian Functional Joint Models for Longitudinal and Time-to-Event Data: An Application to Alzheimer’s Disease
+
+

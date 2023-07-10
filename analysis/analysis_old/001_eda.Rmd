@@ -1,0 +1,478 @@
+---
+title: "01_eda"
+author: "Randy"
+date: "6/16/2021"
+output: html_document
+---
+
+## packages
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library("tidymodels")
+library("tidyverse")
+
+
+library("here")
+library("janitor")
+library("gtsummary")
+library("flextable")
+
+library("knitr")
+library("tinytex")
+library("bookdown")
+
+
+library("HRW")
+library("lattice")
+library("mgcv")
+```
+
+
+```{r}
+# demo(carAucPenSplSVMtune,
+#      package = "HRW")
+# system.file("demo",
+#             "carAucPenSplSVMtune.R", 
+#             package = "HRW")
+```
+
+## FEV -------------------------------------------------------------------------
+## loading fev_data
+```{r message=FALSE, warning=FALSE}
+fev_2020 <- here::here("data", "fev_data_2020.csv") %>% 
+  read_csv() %>%
+  janitor::clean_names() %>%
+  filter(id != 342)
+# View(fev_2020)
+# names(fev_2020)
+# str(fev_2020)
+
+## dataset for table1
+data0_fev <- fev_2020 %>%
+  dplyr::select(Age_first = age_first,
+                Age_last = age_last,
+                Age_change = agen,
+                Age = age_yrs,
+                Years = age_yrs,
+                Repeat = n_visits,
+                Sex = sexf,
+                Height = height,
+                Weight = weight,
+                FEV = fev,
+                Mutation = mut,
+                id, 
+                FU = fu) %>%
+  mutate(Mutation = case_when(Mutation == 1 ~ "Type I",
+                              Mutation == 2 ~ "Type II",
+                              Mutation == 3 ~ "Type III"),
+         ## Tue Jul 06 11:32:17 2021 ------------------------------------------- 
+         ## ask about the sex label
+         Sex = case_when(Sex == 1 ~ "Male",
+                         Sex == 0 ~ "Female"))
+
+
+data1 <- data0_fev %>%
+  filter(Age_change >= 6.5) 
+
+data2 <- data0_fev %>%
+  filter(Age >= 16.5)
+
+
+sum <- data0_fev %>% 
+       group_by(id)  %>%
+       summarize(mean_age = mean(Age),
+                 max_age = max(Age),
+                 min_age = min(Age),
+                 mean_change = mean(Age_change),
+                 min_change = min(Age_change))
+id <- sum$id
+length(id)
+
+test <- sample_n(sum, size = 115) 
+train <- anti_join(test, sum)
+
+summary(data0_fev$Age)
+```
+
+
+## table1_fev
+```{r}
+## for every single time
+table1_ind <- data0_fev %>%
+  select(Age_change, 
+         Years,
+         FEV,
+         Height,
+         Weight,
+         Mutation) %>%
+  tbl_summary(by = Mutation,
+              type = all_continuous() ~ "continuous",
+              statistic = list(all_continuous() ~ "mean: {mean} \n
+                               median: {median} \n 
+                               min: {min} \n
+                               IQR: ({p25}, {p75})"),
+              missing_text = "*missing") %>%
+  # add_p(pvalue_fun = ~ style_pvalue(.x, digits = 2)) %>%
+  # add_overall() %>%
+  ## add overall column
+  modify_header(
+    label = "**Variable**",
+    # p.value = "**Statistics**"
+    ) %>% 
+  ## update the column header
+  bold_labels() 
+  
+## change the style for publication
+table1_ind %>% 
+  gtsummary::as_flex_table() %>%
+  flextable::theme_booktabs() %>%
+  flextable::autofit() %>%
+  flextable::bold(bold = TRUE, 
+                  part = "header") 
+
+```
+
+
+```{r}
+## for every single subject level
+table1_pop <- data0_fev %>%
+  nest(data = c(Age_change, 
+                Years,
+                Height,
+                Weight,
+                FEV)) %>%
+  select(-data, 
+         -id) %>%
+  tbl_summary(by = Mutation,
+              type = all_continuous() ~ "continuous",
+              statistic = list(all_continuous() ~ "mean: {mean} \n
+                               median: {median} \n
+                               IQR: ({p25}, {p75}) \n"),
+              missing_text = "*missing") %>%
+  add_p(pvalue_fun = ~ style_pvalue(.x, digits = 2)) %>%
+  add_overall() %>%
+  ## add overall column
+  modify_header(
+    label = "**Variable**",
+    # p.value = "**Statistics**"
+    ) %>% 
+  ## update the column header
+  bold_labels() 
+  
+## change the style for publication
+table1_pop %>% 
+  gtsummary::as_flex_table() %>%
+  flextable::theme_booktabs() %>%
+  flextable::autofit() %>%
+  flextable::bold(bold = TRUE, 
+                  part = "header") 
+
+```
+
+
+## plot_fev
+```{r eval=FALSE, fig.height=30, fig.width=30, include=FALSE}
+plot_eda_fev <- fev_2020 %>%
+  ggplot(aes(x = age_yrs, y = fev, col = as.factor(id))) +
+  geom_line() +
+  theme_bw() +
+  theme(legend.position = "none")
+
+plot_eda_fev + facet_wrap("id", nrow = 20)
+ggsave("plot_eda_fev.pdf")
+```
+
+```{r eval=FALSE, include=FALSE}
+plot_eda_fev + 
+  geom_point(alpha = 0.3) 
+```
+
+
+## plot_height
+```{r eval=FALSE, fig.height=30, fig.width=30, include=FALSE}
+plot_eda_h <- fev_2020 %>%
+  ggplot(aes(x = age_yrs, y = height, col = as.factor(id))) +
+  geom_line() +
+  theme_bw() +
+  theme(legend.position = "none")
+
+plot_eda_h + facet_wrap("id", nrow = 20)
+ggsave("plot_eda_height.pdf")
+```
+
+
+## plot_weight
+```{r eval=FALSE, fig.height=30, fig.width=30, include=FALSE}
+plot_eda_w <- fev_2020 %>%
+  ggplot(aes(x = age_yrs, y = weight, col = as.factor(id))) +
+  geom_line() +
+  theme_bw() +
+  theme(legend.position = "none")
+
+plot_eda_w + facet_wrap("id", nrow = 20)
+
+ggsave("plot_eda_weight.pdf")
+```
+
+## models
+```{r}
+## the outcome (weight) or height
+## age and genotype and sex
+## 
+## baseline as predictor???
+# View(fev_2020)
+## as random effect for prediction trajectory
+model1 <- gamm(fev ~ s(age_yrs) + s(height) + s(weight), 
+             random = list(id = ~1), 
+             data = fev_2020)
+## fitted penalized spline for the age effect can be viewed using:
+## 
+summary(model1)
+summary(model1$gam)
+summary(model1$lme)
+plot(model1$gam, shade = TRUE, shade.col = "palegreen", bty = "l")
+```
+
+```{r}
+plot(model1$lme)
+intervals(model1$lme)
+```
+
+
+```{r}
+model0 <- gamm(fev ~ s(age_yrs), random = list(id = ~1), data = fev_2020)
+logLRstat <- - 2 * (model0$lme$logLik - model1$lme$logLik)
+
+model0$lme$logLik
+model1$lme$logLik
+logLRstat
+pvalue <- 1 - pchisq(logLRstat, df = 2) 
+
+```
+
+
+
+## TUG---------------------------------------------
+## clean tug_data
+```{r eval=FALSE, include=FALSE}
+tug <- here::here("data", 
+                  "tug_dat.rds") %>%
+  readRDS() %>%
+  select(id,
+         age, 
+         bmi, 
+         sex_f, 
+         time, 
+         tug, 
+         base_tug, 
+         pre_tug) %>%
+  mutate(id = as.factor(id),
+         feas = as.factor(0))
+
+data0_tug <- here::here("data", 
+                        "therapist_final_060321.csv") %>%
+  read.csv() %>%
+  select(-X, 
+         -FirstVisit, 
+         -DC_Date) %>%
+  distinct() %>%
+  filter(!is.na(time)) %>% 
+  mutate(sex_f = as.factor(case_when(sex == "M" ~ 0,
+                                     (sex == "F" ~ 1))),
+         tug = case_when(is.na(TUG_2) ~ TUG_1,
+                         is.na(TUG_1) ~ TUG_2,
+                         !is.na(TUG_1) & !is.na(TUG_2) ~ pmin(TUG_1, TUG_2)),
+         time = as.numeric(time)) %>%
+  ## k.40 = as.numeric(if_else(time > 40 , time - 40 , 0)))
+  ## time.center = (time - mean(time))/sd(time))
+  rename(bmi = BMI)
+```
+
+
+```{r}
+View(tug)
+View(data0_tug)
+str(data0_tug)
+```
+
+
+
+```{r}
+## Create preop and baseline TUG values 
+preop <- data0_tug %>%
+  filter(time < 0) %>%
+  rename(pre_tug = tug) %>%
+  select(ATI_Number, 
+         pre_tug, 
+         time) %>%
+  group_by(ATI_Number) %>%
+  arrange(desc(time), 
+          .by_group = TRUE) %>%
+  slice(1L) %>%
+  select(-time)
+baseline <- data0_tug %>%
+  filter(time > 0) %>%
+  group_by(ATI_Number) %>%
+  arrange(time, 
+          .by_group = TRUE) %>%
+  slice(1L) %>%
+  select(ATI_Number, 
+         tug, 
+         time) %>%
+  rename(base_tug = tug,
+         base_t = time)
+
+
+## merge in new variables 
+data1_tug <- data0_tug %>% 
+  merge(preop, 
+        by = "ATI_Number", 
+        all = "TRUE") %>%
+  merge(baseline, 
+        by = "ATI_Number", 
+        all = "TRUE") %>%
+  select(ATI_Number, 
+         sex_f, 
+         bmi, 
+         age,
+         time, 
+         tug, 
+         pre_tug, 
+         base_tug) %>%
+  rename(id = ATI_Number) %>% 
+  filter(time > 0) %>% 
+  filter(!is.na(id)) %>% 
+  filter(!is.na(bmi)) %>% 
+  mutate(feas = as.factor(1))
+# View(data1_tug)
+
+## Create indicator for baseline measurement used to estimate random effects
+data2_tug <- rbind(data1_tug, 
+                   tug) %>%
+  mutate(base_ind = if_else(base_tug == tug,
+                            1, 
+                            0)) %>%
+  ## create time-based variables
+  mutate(time.center = (time - mean(time)) / sd(time),
+         k.40 = as.numeric(if_else(time > 40, 
+                                   time - 40, 
+                                   0)))
+
+
+View(data2_tug)
+str(data2_tug)
+
+write.csv(data2_tug, "data/tug_data_07062021.csv")
+```
+
+
+## loading tug_data
+```{r}
+data2_tug <- here("data", "tug_data_07062021.csv")
+```
+
+
+## table1_tug
+```{r}
+data3_tug <- data2_tug %>%
+  mutate(Sex = case_when(sex_f == 0 ~ "Male",
+                         sex_f == 1 ~ "Female"),
+         feas = case_when(feas == 0 ~ "Feas0",
+                          feas == 1 ~ "Feas1")) %>%
+  group_by(id, 
+           Sex, 
+           bmi, 
+           base_tug, 
+           feas) %>%
+  mutate(n = n()) %>% 
+  as.data.frame() 
+
+table1_tug_pop <- data3_tug %>%
+  group_by(id, 
+           Sex, 
+           bmi, 
+           base_tug,
+           n,
+           feas) %>%
+  nest() %>% 
+  as.data.frame() %>%
+  select(Sex,
+         Repeat = n,
+         BMI = bmi,
+         `Base TUG` = base_tug,
+         feas) %>% 
+  tbl_summary(by = feas,
+              type = all_continuous() ~ "continuous",
+              statistic = list(all_continuous() ~ "mean: {mean} \n
+                               median: {median} \n
+                               IQR: ({p25}, {p75}) \n"),
+              missing_text = "*missing") %>%
+  add_p(pvalue_fun = ~ style_pvalue(.x, digits = 2)) %>%
+  add_overall() %>%
+  ## add overall column
+  modify_header(
+    label = "**Variable**",
+    # p.value = "**Statistics**"
+    ) %>% 
+  ## update the column header
+  bold_labels() 
+  
+## change the style for publication
+table1_tug_pop %>% 
+  gtsummary::as_flex_table() %>%
+  flextable::theme_booktabs() %>%
+  flextable::autofit() %>%
+  flextable::bold(bold = TRUE, 
+                  part = "header") 
+  
+```
+
+
+```{r}
+table1_tug_ind <- data2_tug %>%
+  mutate(Sex = case_when(sex_f == 0 ~ "Male",
+                         sex_f == 1 ~ "Female"),
+         feas = case_when(feas == 0 ~ "Feas0",
+                          feas == 1 ~ "Feas1")) %>%
+  as.data.frame() %>%
+  select(Age = age,
+         TUG = tug,
+         `Pre TUG` = pre_tug,
+         Time = time,
+         `Time(Centered)` = time.center,
+         K40 = k.40,
+         feas) %>% 
+  tbl_summary(by = feas,
+              type = all_continuous() ~ "continuous",
+              statistic = list(all_continuous() ~ "mean: {mean} \n
+                               median: {median} \n
+                               IQR: ({p25}, {p75}) \n"),
+              missing_text = "*missing") %>%
+  add_p(pvalue_fun = ~ style_pvalue(.x, digits = 2)) %>%
+  add_overall() %>%
+  ## add overall column
+  modify_header(
+    label = "**Variable**",
+    # p.value = "**Statistics**"
+    ) %>% 
+  ## update the column header
+  bold_labels() 
+  
+## change the style for publication
+table1_tug_ind %>% 
+  gtsummary::as_flex_table() %>%
+  flextable::theme_booktabs() %>%
+  flextable::autofit() %>%
+  flextable::bold(bold = TRUE, 
+                  part = "header") 
+```
+
+1. dynamic prediction
+2. use the tug data
+3. the packages from CK
+4. GCV for the the model fitting
+
+
+
+
+

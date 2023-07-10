@@ -1,0 +1,193 @@
+---
+title: "13_marginal_simulation"
+author: "randy"
+date: "2022-07-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+library("tidyverse")
+library("magrittr")
+library("gamlss")
+library("brokenstick")
+library("rjags")
+library("JMbayes")
+library("splines")
+
+library("lme4")
+library("nlme")
+library("splines")
+library("broom.mixed")
+
+library(data.table)
+```
+
+```{r}
+train <- here::here("data", 
+                    "epic_clean_randy.csv") %>%
+  read.csv(row.names = 1) %>% 
+  mutate(id = as.factor(id)) %>%
+  filter(group == "training")
+
+test <- here::here("data", 
+                   "epic_clean_randy.csv") %>%
+  read.csv(row.names = 1) %>%
+  filter(group == "testing")
+
+basetest <- test %>% 
+  group_by(id) %>% 
+  arrange(time) %>% 
+  slice(1L) 
+
+train_info <- train %>% 
+  dplyr::select(id, sex, time, genotype)
+
+```
+
+
+
+```{r}
+ctrl <- lmeControl(opt = 'optim')
+
+fit1 <-  lme(ht ~ bs(time,
+                     degree = 3) * sex - 1,
+              random = ~ 1 + time| id,
+              control = ctrl,
+              data = train)
+
+
+fit2 <-  lme(ht ~ bs(time,
+                     knots = c(10, 12, 15), 
+                     degree = 3) * sex - 1,
+              random = ~ 1 + time| id,
+              control = ctrl,
+              data = train)
+
+fit3 <-  lme(ht ~ bs(time,
+                     knots = c(10, 12, 15), 
+                     degree = 3) * sex - 1,
+              random = ~ 1 + bs(time, df = 4, degree = 1, intercept = FALSE)| id,
+              control = ctrl,
+              data = train)
+
+fit4 <-  lme(ht ~ bs(time,
+                     knots = c(10, 12, 15), 
+                     degree = 3) * sex - 1,
+              random = ~ 1 + bs(time, df = 5, degree = 2, intercept = FALSE)| id,
+              control = ctrl,
+              data = train)
+
+
+all <- here::here("data", 
+                  "epic",
+                  "epic_clean_randy.csv") %>%
+  read.csv(row.names = 1) %>% 
+  mutate(id = as.factor(id))
+
+fit5 <-  lme(ht ~ bs(time, knots = c(10, 12, 15), degree = 3) * sex - 1,
+             random = ~ 1 + bs(time, df = 5, degree = 2, intercept = FALSE)| id,
+             control = ctrl,
+             data = all)
+
+glance5 <- broom.mixed::glance(fit5) %>%
+  mutate(fixed = "fixed = bs(time, degree = 3, knots = c(10, 12, 15))",
+         random = "random = ~ bs(time, df = 5, degree = 2)")
+
+tidy5 <- broom.mixed::tidy(fit5)
+augment5 <- broom.mixed::augment(fit5)
+
+margin_mean <- augment5 %>%
+  dplyr::select(id, sex, time, `.fixed`)
+
+vcov5 <- getVarCov(fit5)
+save(glance5, tidy5, margin_mean, vcov5, file = "randy_margin_model.Rdata")
+
+
+(tidy3 <- broom.mixed::tidy(fit3))
+(vcov3 <- getVarCov(fit3))
+
+(tidy4 <- broom.mixed::tidy(fit4))
+(vcov4 <- getVarCov(fit4))
+
+
+(tidy5 <- broom.mixed::tidy(fit5))
+(vcov5 <- getVarCov(fit5))
+
+
+# attr(bs(train$time, degree = 3), "knots")
+# range(train$time)
+
+## it takes forever to run this model
+# fit4 <-  lme(ht ~ bs(time,
+#                      knots = c(10, 12, 15), 
+#                      degree = 3) * sex - 1,
+#               random = ~ 1 + bs(time, knots = c(10, 12, 15), 3)| id,
+#               control = ctrl,
+#               data = train)
+
+## chooses df - 1 - intercept knots
+## at suitably chosen quantiles
+# fit5 <-  lme(ht ~ bs(time,
+#                      knots = c(10, 12, 15), 
+#                      degree = 3) * sex - 1,
+#               random = ~ 1 + ns(time, df = 5)| id,
+#               control = ctrl,
+#               data = train)
+
+```
+
+
+plm setup 
+
+use single matchup
+use multiple time matchup
+use mah dist
+use fixed matching number 
+
+lmm dyn
+the best: df5 quadrtic 3knots term bs
+df6 cubic 3knots term bs
+
+
+mvnorn(0, Sigma 6 x 6)
+
+section to show lmm with random int+slop -> linear piece bs -> higher power df
+
+AIC BIC 
+
+
+- in .R files, reproducible 
+- redo every table
+
+- tables functions 
+
+
+- model 
+- one dataset sources 
+  - plm
+    - one time
+    - multiple time
+    - mahalanobis 
+
+
+
+```{r}
+broom.mixed::glance(fit1) ## 190908.2
+broom.mixed::glance(fit2) ## 182505.4	df 3
+broom.mixed::glance(fit3) ## 156041.5 linear df4 
+broom.mixed::glance(fit4) ## 145323.4 quadrtic df5
+
+View(broom.mixed::augment(fit3))
+## if use cubic 155805.1
+## if use linear with three knots 151773.3
+```
+
+```{r}
+broom.mixed::augment(fit5)
+```
+

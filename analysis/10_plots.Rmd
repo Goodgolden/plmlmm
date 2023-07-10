@@ -1,0 +1,219 @@
+---
+title: "10_plots"
+author: "randy"
+date: "2022-10-20"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+## packages for tidy and clean
+library(tidyverse)
+library(here)
+
+## packages for plots and colors
+library(ggplot2)
+library(ggthemes)
+library(rgdal)
+library(grid)
+library(gridExtra)
+library(RColorBrewer)
+
+## packages for tables
+library(gt)
+library(flextable)
+```
+
+
+```{r}
+
+pullall <- function(dataset) {
+  ##  test {{{-------------------------------------------------------------
+  test_bias <- dataset %>%
+    # output_ %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  test_mse <- dataset %>%
+    # output_ %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    map(~.$bias ^2) %>%
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  test_cov50<- dataset %>%
+    # output_ %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    map("coverage50") %>%
+    # map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  test_cov80 <- dataset %>%
+    # output_ %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    map("coverage80") %>%
+    # map("coverage95") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  test_cov90 <- dataset %>%
+    # output_ %>%
+    # unlist(recursive = FALSE) %>%
+    map("centiles_observed") %>% ##View())
+    # map("bias") %>%
+    # map("coverage50") %>%
+    # map("coverage80") %>%
+    map("coverage90") %>%
+    # map(~.$bias ^2) %>% 
+    map(~mean(., na.rm = TRUE)) %>%
+    unlist() %>% 
+    mean()
+  ## }}}------------------------------------------------------------------------  
+
+  result <- list("test_bias" = test_bias, "test_mse" = test_mse, "test_cov50" = test_cov50,
+                 "test_cov80" = test_cov80, "test_cov90" = test_cov90)
+}
+```
+
+```{r}
+load("~/Desktop/project/plmlmm/test_eld_20221020.Rdata")
+eld_summary <- test_eld_all %>%
+  map_dfr(pullall) %>%
+  mutate(sample_size = c(3, 5, 8, 10, 15, 20, 25, 30, 50))
+save(eld_summary, file = "eld_sample_size.Rdata")
+eld_plot <- eld_summary %>%
+  dplyr::select(sample_size = sample_size, `50` = test_cov50, 
+                `80` = test_cov80, `90` = test_cov90) %>% 
+  mutate(`Sample size` = as.factor(sample_size)) %>%
+  pivot_longer(cols = c(`50`, `80`, `90`),
+               names_to = "CI",
+               values_to = "coverage") %>%
+  ggplot(aes(x = as.factor(CI), y = `coverage`)) +
+         geom_point(aes(color = `Sample size`)) +
+          theme_bw() +
+          labs(x = "coverage") +
+          labs(y = "percentage") +
+          geom_line(aes(group = `Sample size`,
+                        color = `Sample size`)) +
+          ggthemes::scale_fill_tableau("Jewel Bright") + 
+          ## so far the best color composition
+          ggthemes::scale_colour_tableau("Jewel Bright") 
+remove(test_eld_all)
+eld_plot
+```
+
+```{r}
+load("~/Desktop/project/plmlmm/test_mhl_n_20221020.Rdata")
+mhln_summary <- test_mhl_nall %>%
+  map_dfr(pullall) %>%
+  mutate(sample_size = c(3, 5, 8, 10, 15, 20, 25, 30, 50))
+mhln_plot <- mhln_summary %>%
+  dplyr::select(sample_size = sample_size, `50` = test_cov50, 
+                `80` = test_cov80, `90` = test_cov90) %>% 
+  mutate(`Sample size` = as.factor(sample_size)) %>%
+  pivot_longer(cols = c(`50`, `80`, `90`),
+               names_to = "CI",
+               values_to = "coverage") %>%
+  ggplot(aes(x = as.factor(CI), y = `coverage`)) +
+         geom_point(aes(color = `Sample size`)) +
+          theme_bw() +
+          labs(x = "coverage") +
+          labs(y = "percentage") +
+          geom_line(aes(group = `Sample size`,
+                        color = `Sample size`)) +
+          ggthemes::scale_fill_tableau("Jewel Bright") + 
+          ## so far the best color composition
+          ggthemes::scale_colour_tableau("Jewel Bright")  
+remove(test_mhl_nall) 
+mhln_plot
+```
+
+
+
+```{r}
+load("~/Desktop/project/plmlmm/test_mhl_p_20221020.Rdata")
+mhlp_summary <- test_mhlpl %>%
+  map_dfr(pullall)
+
+mhlp_summary 
+
+mhlp_plot <- mhlp_summary %>%
+  dplyr::select(sample_size = sample_size, `50` = test_cov50, 
+                `80` = test_cov80, `90` = test_cov90) %>% 
+  mutate(sample_size = as.factor(sample_size)) %>%
+  pivot_longer(cols = c(`50`, `80`, `90`),
+               names_to = "CI",
+               values_to = "coverage") %>%
+  ggplot(aes(x = as.factor(CI), y = `coverage`)) +
+         geom_point(aes(color = sample_size)) +
+          theme_bw() +
+          labs(x = "coverage") +
+          labs(y = "percentage") +
+          geom_line(aes(group = sample_size,
+                        color = sample_size)) +
+          ggthemes::scale_fill_tableau("Jewel Bright") + 
+          ## so far the best color composition
+          ggthemes::scale_colour_tableau("Jewel Bright") 
+remove(test_mhl_pall)
+mhlp_plot
+```
+
+
+```{r}
+load("~/Desktop/project/plmlmm/test_sgl_t_20221020.Rdata")
+sglt_summary <- test_sgl_tall %>%
+  map_dfr(pullall) %>%
+  mutate(sample_size = c(2, 4, 6, 8, 10, 12, 14))
+
+sglt_plot <- sglt_summary %>%
+  dplyr::select(sample_size = sample_size, `50` = test_cov50, 
+                `80` = test_cov80, `90` = test_cov90) %>% 
+  mutate(sample_size = as.factor(sample_size)) %>%
+  pivot_longer(cols = c(`50`, `80`, `90`),
+               names_to = "CI",
+               values_to = "coverage") %>%
+  ggplot(aes(x = as.factor(CI), y = `coverage`)) +
+         geom_point(aes(color = sample_size)) +
+          theme_bw() +
+          labs(x = "coverage") +
+          labs(y = "percentage") +
+          geom_line(aes(group = sample_size,
+                        color = sample_size)) +
+          ggthemes::scale_fill_tableau("Jewel Bright") + 
+          ## so far the best color composition
+          ggthemes::scale_colour_tableau("Jewel Bright") +
+  guides(fill = guide_legend(title = "Matching time"))
+remove(test_sgl_tall)
+sglt_plot
+```
+
+
+
+
+
+
+
+
+
+

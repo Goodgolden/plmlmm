@@ -1,0 +1,100 @@
+---
+title: "02_simulation2"
+author: "randy"
+date: '2022-03-16'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(splines)
+mod1 <- lme(ht ~ bs(age, knots = c(10), 
+                    degree = 3, 
+                    intercept = TRUE) * sex,
+              random = ~ 1| id,
+              data = data)
+
+broom.mixed::tidy(mod1)
+summary(mod1)
+# 
+# broom.mixed::augment(mod1) %>% 
+#   dplyr::select(age, .fixed) %>%
+#   arrange(age) %>%
+#   ggplot(aes(age, .fixed)) +
+#   geom_line()
+
+broom.mixed::tidy(mod1)
+```
+
+
+
+```{r}
+## generate spline --------------------------------------------------
+genSpline <- function(x, knots, degree, theta) {
+
+  basis <- bs(x = x, 
+              knots = knots, 
+              degree = degree,
+              intercept = TRUE)
+
+  y.spline <- basis %*% theta
+
+  dt <- data.table(x, y.spline = as.vector(y.spline))
+
+  return(list(dt = dt, basis = basis, knots = knots))
+
+}
+
+
+## plot.basis -------------------------------------------------------
+plot.basis <- function(basisdata) {
+  
+  dtbasis <- as.data.table(basisdata$basis)
+  dtbasis[, x := seq(0, 1, length.out = .N)]
+  dtmelt <- melt(data = dtbasis, id = "x", 
+                 variable.name = "basis", variable.factor = TRUE)
+
+  ggplot(data=dtmelt, aes(x=x, y=value, group = basis)) +
+      geom_line(aes(color=basis), size = 1) +
+      theme(legend.position = "none") +
+      scale_x_continuous(limits = c(0, 1), 
+                         breaks = c(0, basisdata$knots, 1)) +
+      theme(panel.grid.minor = element_blank())
+}
+
+## plot spline ---------------------------------------------------------
+plot.spline <- function(basisdata, points = FALSE) {
+
+    p <- ggplot(data = basisdata$dt)
+    
+    if (points) p <- p + geom_point(aes(x=x, y = y), color = "grey75")  
+      
+    p <- p + 
+      geom_line(aes(x = x, y = y.spline), color = "red", size = 1) +
+      # scale_y_continuous(limits = c(0, 1)) +
+      # scale_x_continuous(limits = c(0, 1), breaks = knots) +
+      theme(panel.grid.minor = element_blank())
+       
+   return(p)
+  
+}
+```
+
+```{r}
+x <- seq(5, 20, length.out = 1000)
+knots <- c(10)
+
+theta <- mod1$coefficients$fixed[1:5]
+mod1$coefficients$fixed
+
+sdata <- genSpline(x, knots, 3, theta)
+plot.basis(sdata)
+plot(sdata$dt$x, sdata$dt$y.spline)
+plot.spline(sdata)
+
+View(mod1)
+```
+

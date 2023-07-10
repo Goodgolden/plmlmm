@@ -1,0 +1,282 @@
+
+
+
+```{r}
+library(tidyverse)
+library(doParallel)
+library(foreach)
+library(tictoc)
+# devtools::install_github("Goodgolden/plmlmm", foce = TRUE)
+library(plmlmm)
+# devtools::load_all()
+# simulation_20 <- simulation_20[1:20]
+# save(simulation_20, file = "plmlmm_simulation_20_dataset_20220824.Rdata")
+load("plmlmm_simulation_20_dataset_20220824.Rdata")
+detectCores()
+```
+
+
+```{r}
+
+detectCores()
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
+output_eld <- foreach(i = 1:20,
+                  .export = ls(globalenv()),
+                  .packages = "plmlmm") %dopar% {
+
+    .GlobalEnv$simulation_20 <- simulation_20
+    `%!in%` <- Negate(`%in%`)
+    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
+    id_train <- unique(train_data$id)
+    bks_pred <-
+     plmlmm::brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        # newdata = test_baseline,
+        choice = "predicted")
+    lb_data <-
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = bks_pred)
+    eld_n10 <- map(id_train,
+                   ~plmlmm::pred_matching(
+                     lb_data = lb_data,
+                     obs_data = train_data,
+                     match_methods = "euclidean",
+                     match_num = 10,
+                     gamlss_formula = "ht ~ cs(time, df = 3)",
+                     gamsigma_formula = "~ cs(time, df = 1)",
+                     match_plot = FALSE,
+                     predict_plot = FALSE,
+                     sbj = .))
+   eld_n10
+                  }
+save(output_eld, file = "plmlmm_simulation_output_eld_dataset1_results_20220824.Rdata")
+remove(output_eld)
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+
+```
+
+
+```{r}
+detectCores()
+
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
+output_mhlp <- try( foreach(i = 1:20, 
+                  .export = ls(globalenv()), 
+                  .packages = "plmlmm") %dopar% {
+    .GlobalEnv$simulation_20 <- simulation_20
+    `%!in%` <- Negate(`%in%`)
+    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
+    id_train <- unique(train_data$id)
+    bks_pred <- 
+     plmlmm::brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        # newdata = test_baseline,
+        choice = "predicted")
+    lb_data <- 
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = bks_pred)
+    mhl_p09 <- map(id_train,
+                   ~try(plmlmm::pred_matching(
+                     lb_data = lb_data,
+                     obs_data = train_data,
+                     match_methods = "mahalanobis",
+                     match_alpha = 0.9,
+                     gamlss_formula = "ht ~ cs(time, df = 3)",
+                     gamsigma_formula = "~ cs(time, df = 1)",
+                     match_plot = FALSE,
+                     predict_plot = FALSE,
+                     sbj = .)))
+   mhl_p09})
+
+save(output_mhlp,
+     file = "plmlmm_simulation_output_mhlp_dataset1_results_20220824.Rdata")
+remove(output_mhlp)
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+```
+
+
+```{r}
+detectCores()
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+
+registerDoParallel(myCluster)
+
+timea <- Sys.time()
+output_mhln <- foreach(i = 1:20, 
+                  .export = ls(globalenv()), 
+                  .packages = "plmlmm") %dopar% {
+
+    .GlobalEnv$simulation_20 <- simulation_20
+    `%!in%` <- Negate(`%in%`)
+    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
+    id_train <- unique(train_data$id)
+    bks_pred <- 
+     plmlmm::brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        # newdata = test_baseline,
+        choice = "predicted")
+    lb_data <- 
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = bks_pred)
+    mhl_n10 <-   map(id_train,
+                        ~plmlmm::pred_matching(
+                          lb_data = lb_data,
+                          obs_data = train_data,
+                          match_methods = "mahalanobis",
+                          match_num = 10,
+                          gamlss_formula = "ht ~ cs(time, df = 3)",
+                          gamsigma_formula = "~ cs(time, df = 1)",
+                          match_plot = FALSE,
+                          predict_plot = FALSE,
+                          sbj = .))
+
+   mhl_n10
+                  }
+
+save(output_mhln, file = "plmlmm_simulation_output_mhln_dataset1_results_20220824.Rdata")
+remove(output_mhln)
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+```
+
+
+```{r}
+detectCores()
+myCluster <- makeCluster(5, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
+output_sgl10_n10 <- foreach(i = 1:20, 
+                  .export = ls(globalenv()), 
+                  .packages = "plmlmm") %dopar% {
+    .GlobalEnv$simulation_20 <- simulation_20
+    `%!in%` <- Negate(`%in%`)
+    train_data <- dplyr::filter(simulation_20[[i]], group == "training")
+    id_train <- unique(train_data$id)
+    bks_pred <- 
+     plmlmm::brokenstick_prediction(
+        outcome = "ht",
+        time = "time",
+        id = "id",
+        train_data = train_data,
+        knots = c(5, 10, 12),
+        pred_time = c(2, 4, 6, 8, 10, 12),
+        # newdata = test_baseline,
+        choice = "predicted")
+    lb_data <- 
+      plmlmm::linear_brokenstick(
+        lm_formula = "`.pred` ~ timef * sex + baseline",
+        bks_pred = bks_pred)
+    sgl10_n10 <-   map(id_train,
+                        ~plmlmm::pred_matching(
+                          lb_data = lb_data,
+                          obs_data = train_data,
+                          match_methods = "single",
+                          match_num = 10,
+                          match_time = 10,
+                          match_alpha = NULL,
+                          gamlss_formula = "ht ~ cs(time, df = 3)",
+                          gamsigma_formula = "~ cs(time, df = 1)",
+                          match_plot = FALSE,
+                          predict_plot = FALSE,
+                          sbj = .))
+   sgl10_n10}
+save(output_sgl10_n10, 
+     file = "plmlmm_simulation_output_sgl_dataset1_results_20220824.Rdata")
+
+remove(output_sgl10_n10)
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+```
+
+
+
+
+```{r}
+detectCores()
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
+
+
+registerDoParallel(myCluster)
+timea <- Sys.time()
+lmm_train <- foreach(i = 1:20, 
+                  .export = ls(globalenv()), 
+                  .packages = c("plmlmm", "splines", "nlme", "tidyverse", "JMbayes")) %dopar% {
+                     .GlobalEnv$simulation_20 <- simulation_20
+                     `%!in%` <- Negate(`%in%`)
+                    train_data <<- dplyr::filter(simulation_20[[i]], group == "training")
+                    train_baseline <- train_data %>% 
+                      group_by(id) %>%
+                      slice(1L)
+                  
+                    lmm_results <- lmm_pred(train_data, train_baseline)
+                    lmm_results           
+                  }
+
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+save(lmm_train, file = "plmlmm_simulation_lmm_dataset1_results_20220824.Rdata")
+# stopCluster(myCluster)
+
+
+detectCores()
+myCluster <- makeCluster(20, # number of cores to use
+                         type = "PSOCK") # type of cluster
+registerDoParallel(myCluster)
+timea <- Sys.time()
+lmm_test <- foreach(i = 1:20, 
+                  .export = ls(globalenv()), 
+                  .packages = c("plmlmm", "splines", "nlme", "tidyverse", "JMbayes")) %dopar% {
+                     .GlobalEnv$simulation_20 <- simulation_20
+                     `%!in%` <- Negate(`%in%`)
+                    train_data <<- dplyr::filter(simulation_20[[i]], group == "training")
+                    test_data <<- dplyr::filter(simulation_20[[i]], group == "testing")
+                    test_baseline <- test_data %>% 
+                      group_by(id) %>%
+                      slice(1L)
+                  
+                    lmm_results <- lmm_pred(train_data, test_baseline)
+                    lmm_results        
+                  }
+stopCluster(myCluster)
+timeb <- Sys.time()
+timeb - timea
+
+save(lmm_test, file = "test_plmlmm_simulation_lmm_dataset1_results_20220824.Rdata")
+```
+

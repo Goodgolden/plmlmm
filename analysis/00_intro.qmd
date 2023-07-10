@@ -1,0 +1,37 @@
+# Introduction
+
+Modern clinical services generate vast amounts of data, providing unprecedented opportunity to make personalized modeling and predictions. However, traditional statistical methods are not powerful or flexible enough to perform such tasks. Common methods of heterogeneous data analysis, such as linear mixed (random effect model), mixture model, hierarchical model, and network learning, fail to provide individual-level prediction or require prior knowledge regarding the relationship between features and outcomes. To address this challenge, this paper proposes a personalized model using predictive mean matching, which is capable of retaining accuracy and efficiency.
+
+PLM provides a model fitting strategy with fewer but more similar samples to achieve higher predictive performance than with overall data. With the curving matching, we identified a training cohort for the target patient and used only those "people-like-me" to train a personalized model. Previous studies on PLM methods have used single measures to calculate patient similarity, yet most of them did not take the flexibility and complexity of patient features into consideration.
+
+In this paper, the authors propose to use multiple time points with Euclidean distance and Mahalanobis distance to calculate patient similarity, to take multiple time information into consideration. Two aspects are mainly focused in this study: the use of different similarity metrics, and different metric selection criteria for the set and size of information donor cohort. To this end, we divided a set of individuals into a training set and a test set. The training set was used to tune the neighbors-based prediction and to select the optimal number of matches to achieve optimal performance. The training set then served as the donor dataset for an out-of-sample validation with patients from the test set. The well-calibrated predictions generated through this process have the potential to inform individualized care decisions.
+
+To examate and evaluate this methodology, we used EPIC data to conduct a simulation study on new methods of People-Like-Me and dynamic prediction with JMbayes. This adjustable and flexible model is more suitable for individual prediction using information from other similar patients.
+
+# Motivating Application
+
+The EPIC Observational Study is a prospective, multi-center, observational longitudinal study that was conducted to investigate the measures of care provided by Medicare health plans. This study included 1772 participants enrolled between 2004 and 2006, all of whom were confirmed with a diagnosis of cystic fibrosis (CF) prior to the age of 12. This paper aims to analyze the EPIC data, which was collected through the Cystic Fibrosis Foundation Patient Registry (CFFPR). The data was previously reported and analyzed in several research studies and was updated to include observational data up to 2014.
+
+To facilitate the analysis, the dataset was filtered to include only participants with registry entries before the age of 4 and more than 5 years of follow-up with at least 10 visits. The starting ages of the participants were then realigned between 3 and 4 years old. The demographic information was summarized in Table 1, and the distributions of the starting age, follow-up time, and visit times were presented in Supplementary Figures.
+
+Furthermore, the dataset was split into two sets, the training and test set, for the purpose of tuning the neighbors-based prediction model and determining the optimal number of matches to achieve optimal performance.
+
+The postoperative time for all patients was estimated by two distinct methods: people like me (brokenstick package and gamlss package) and dynamic prediction (JMbayes). The performance of the people like me method was then compared against the dynamic prediction method. The results of this comparison will be presented in the results section.
+
+## Methods
+
+```{=tex}
+\begin{equation}\label{eq:model}
+    y_i = X_i \beta + b_i + \epsilon_i
+\end{equation}
+```
+```{=tex}
+\end{enumerate}
+```
+This paper presents a statistical investigation of the linear mixed effects model for individual trajectories. We consider the situation where each individual has a different number of measurements at a different set of time points. Our aim is to model the linear relationship between a response variable and its associated covariates, taking into account the individual-specific random effects and the residuals. The model is expressed as in Equation \ref{eq:model}.
+
+We assume $N$ individuals ($i$, $i = 1, 2, ..., N$) each with $n_i$ times measurements for a given individual $i$, in the training dataset. Let $y_{ij}$ denotes the observed value for subject $i$ at time point $t_{ij}$ for the $j$th measurement, $j = 1, ..., n_i$. Moreover, $y_{i} = \{_c \ y_{ij}\}_{j}^{n_i}$ represents a stacking vector of all $n_i$ observations of individual $i$ as one column, and $X_i = \{_c \ x_{ij}\}_{j}^{n_i}$ represents a column-wise stacking of all the feature variable of individual $i$ at time $j$ in a row vector $x_{ij}$. We assume that the vector $\beta$ contains the population level the fixed effects; the vector of individual-specific random effects $b_i$, $b_i \overset {iid} {\sim} \mathcal N (\pmb 0, \pmb G_i)$; and the residuals are independently and identically normally distribution: $\epsilon_i \overset {iid} {\sim} \mathcal N (\pmb 0, \pmb R_i)$.
+
+The size of the figures. save as .png
+
+save the table and figure seperately 500 and 1000 figures graphs

@@ -1,0 +1,314 @@
+---
+title: "07_brokenstick"
+author: "randy"
+date: '2022-05-03'
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# load_all("/Users/goodgolden5/Documents/PMMSKNN")
+```
+
+
+```{r}
+library("tidyverse")
+library("magrittr")
+library("gamlss")
+library("brokenstick")
+library("rjags")
+library("JMbayes")
+library("splines")
+
+library("lme4")
+library("nlme")
+library("splines")
+```
+
+
+```{r}
+train <- here::here("data", 
+                    "epic_clean_randy.csv") %>%
+  read.csv(row.names = 1) %>% 
+  mutate(id = as.factor(id)) %>%
+  filter(group == "training")
+
+test <- here::here("data", 
+                   "epic_clean_randy.csv") %>%
+  read.csv(row.names = 1) %>%
+  filter(group == "testing")
+
+basetest <- test %>% 
+  group_by(id) %>% 
+  arrange(time) %>% 
+  slice(1L) 
+
+View(train)
+```
+
+
+```{r}
+fit3 <- lme(ht ~ bs(time, 
+                      knots = c(5, 10, 12, 14), 
+                      degree = 3,
+                      intercept = FALSE)  +  genotype - 1,
+              # control = ctrl,
+              random = ~ 1 | id/sex,
+              data = train)
+
+
+
+pre_test<- predict(object = fit3, 
+                   new_data = train,
+                   x = c(5, 10, 12))
+
+## right now ignore the test dataset
+# bks_cp <- data.frame(predict = pre_test,
+#                      test = test$ht)
+```
+
+The comparison between lmm and brokenstick
+
+1. a linear mixed model; to see whether we can use brokenstick model dynamic prediction
+2. people like me approach see how it works, with simulation; follow jeremy and ck's code
+
+
+people-like-me 
+
+specific time to select matches...
+ 
+
+```{r}
+bks3 <- brokenstick(formula = ht ~ time|id, 
+                    data = train,  
+                    knots = c(5, 10, 12, 14))
+
+est3_knots <- predict(bks3, 
+                     x = "knots", 
+                     group = train$id)
+est3_all <- predict(bks3, 
+                   group = train$id)
+
+
+```
+
+
+
+```{r}
+# ---- Read in data sources -------------------------------------------------
+# skinny dataset with id, time, ht for all patients
+train_skinny <- train %>%
+  dplyr::select(id, time, ht)
+# View(train_skinny)
+
+
+train_skinny %>% group_by("id") %>% slice(1L)
+ 
+info <- train %>%
+  dplyr::select(id, sex, genotype, race, ht) %>%
+  unique()
+
+#  dataset with yhat.90 values for all patients
+yhat <- est3_knots %>%
+  pivot_wider(names_from = time, 
+              values_from = .pred) %>% 
+  dplyr::select(id = "id",
+         yhat_t0 = "0",
+         yhat_t5 = "5",
+         yhat_t10 = "10",
+         yhat_t12 = "12",
+         yhat_tend = "16.93") %>%
+  full_join(info)
+
+```
+
+
+## use the observed value of the visit baseline -----------------------
+
+
+```{r}
+result <- list()
+
+## brokenstick model ------------------
+##                           [!]
+
+lin_bk_t12 <- lm(yhat_t12 ~ yhat_t0 + sex + genotype, 
+                 data = yhat)
+
+summary(lin_bk_t12)
+
+lb_data<- train %>% 
+  group_by(id) %>% 
+  arrange(time) %>% 
+  slice(1L) %>% 
+  mutate(yhat_t0 = ht,
+         base_time = time) %>%
+  ungroup() %>% 
+  mutate(lb_t12 = predict(lin_bk_t12, 
+                           newdata = .)) %>% 
+  dplyr::select(id, lb_t12) %>%
+  full_join(yhat, by = "id") 
+
+View(lb_data)
+```
+
+
+
+## potentially use the RV for the popensity score
+## for the matching number of people.
+
+
+```{r eval=FALSE, include=TRUE}
+for (sbj in lb_data$id) {
+  
+  subject <- lb_data %>% filter(id == sbj)
+  
+  lb_sub <- lb_data %>%
+    transmute(id = id,
+              ## more time points for matching 
+              ## adding the correlation
+              diff = abs(lb_t12 - subject$lb_t12)) %>%
+    arrange(diff) %>%
+    ## make it reproducible --------------
+  ## considering just here --------------
+    slice(2:31) %>% 
+    inner_join(train_skinny, by = "id") 
+  
+  
+  # lb_sub$id %>% unique() %>% length()
+  
+  ## specific reason of using sqrt time ?---------------------
+   plm <- gamlss(ht ~ cs(time, df = 3),
+                 sigma.formula = ~cs(time, df = 1),
+             #nu.formula = ~cs(time^0.1, df=1),
+             #tau.formula = ~cs(time^0.5, df=1),
+             data = na.omit(lb_sub), 
+             n.cyc = 30,
+             family = NO)
+  
+
+  plot(plm)
+  
+  ref_txt <- 
+    centiles.pred(plm,
+                 type = c("centiles"),
+                 xname = "time",
+                 xvalues = c(0:17),
+                 cent = c(5, 10, 25, 
+                          50, 75, 
+                          90, 95),
+                 plot = T,
+                 legend = T) %>%
+    dplyr::select(time = 1,
+                  q05 = 2,
+                  q10 = 3,
+                  q25 = 4,
+                  q50 = 5,
+                  q75 = 6,
+                  q90 = 7,
+                  q95 = 8) %>% 
+    mutate(cfint90 = q95 - q05,
+           cfint80 = q90 - q10,
+           cfint50 = q75 - q25)
+  
+  result[sbj] <- data.frame(results = nest(ref_txt))
+}
+```
+
+```{r}
+# save(results, file = "people_like_me_20220516.Rdata")
+load("people_like_me_20220516.Rdata")
+View(results)
+```
+
+
+
+```{r}
+confint50 <- map_dfr(results, ~.$cfint50) %>% t() 
+
+unlist(confint50) %>% mean()
+unlist(confint50) %>% sd()
+
+confint80 <- map_dfr(results, ~mean(.$cfint80)) %>% t() 
+unlist(confint80) %>% mean()
+unlist(confint80) %>% sd()
+
+confint90 <- map_dfr(results, ~mean(.$cfint90)) %>% t() 
+unlist(confint90) %>% mean()
+unlist(confint90) %>% sd()
+```
+
+```{r fig.height=5, fig.width=5}
+q50_list <- map_dfr(results, ~.$q50 %>%
+                      as.data.frame() %>%
+                      t() %>%
+                      as.data.frame())
+rownames(q50_list) <- names(results)
+
+  
+
+## taking the mean of q50??-------------------------------
+# calibration plot
+ggplot() +
+  geom_abline(slope = 1, intercept = 0)+
+  geom_point(aes(x = lb_data$ht, y = q50_list$V13))+
+  ggtitle("PLM calibration") +
+  theme(aspect.ratio=1) +
+  # coord_fixed() + 
+  theme_bw()
+```
+
+
+
+```{r eval=FALSE, include=TRUE}
+# Precision CI
+
+#standard error
+(sd(q50_list) / sqrt(nrow(q50_list))) * 1.96 
+
+#Bias
+#test_baseline <- train_data %>% filter(base.ind==0)
+
+test_baseline %<>% mutate(bias = (C50 - ht)/sd(na.omit(test_baseline$ht)))
+mean(na.omit(test_baseline$bias)) #-0.009284888
+
+
+# Mean square error
+test_baseline %<>% mutate(err.sq = (ht-C50)^2)
+mse <- mean(test_baseline$err.sq) 
+
+
+# R2 values
+R2 <- lm(ht ~ C50, data = test_baseline)
+summary(R2)
+
+#------------------ Examine coverage ----------------------------------------------------
+coverage.50 <- test_baseline %>% filter(ht <= C75) %>% filter(ht >=C25)
+coverage.50 <- as.numeric(NROW(coverage.50)) / as.numeric(NROW(test_baseline)) # 0.47
+coverage.80 <- test_baseline %>% filter(ht <= C90) %>% filter(ht >=C10)
+coverage.80 <- as.numeric(NROW(coverage.80)) / as.numeric(NROW(test_baseline)) #0.68
+```
+
+
+
+```{r include = TRUE, eval = FALSE}
+# Early coverage = 0.65
+early <- test_baseline %>% filter(time <57)
+early.coverage <- early %>% filter(ht >=C25) %>% filter(ht <=C75)
+as.numeric(NROW(early.coverage)) / as.numeric(NROW(early))
+
+
+# mid coverage = 0.51
+mid <- test_baseline %>% filter(time >=57) %>% filter(time <182)
+mid.coverage <- mid %>% filter(ht >=C25) %>% filter(ht <=C75)
+as.numeric(NROW(mid.coverage)) / as.numeric(NROW(mid))
+
+
+# late coverage = 0.22
+late <- test_baseline %>% filter(time >=182)
+late.coverage <- late %>% filter(ht >=C25) %>% filter(ht <=C75)
+as.numeric(NROW(late.coverage)) / as.numeric(NROW(late))
+
+
+```
+

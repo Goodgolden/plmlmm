@@ -1,0 +1,127 @@
+---
+title: run time testing with assertive
+author: Randy
+---
+
+# Assertive
+
+```{r error = TRUE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+counts <- c(1, 2.2, 3, 4.5)
+stopifnot(
+  # check the variable is numeric
+  is.numeric(counts),
+  # check all values are non-negative
+all(counts >= 0),
+# check all values are whole numbers isTRUE(all.equal(counts, round(counts)))
+)
+```
+
+
+```{r}
+suppressPackageStartupMessages(library(assertive, quietly = TRUE))
+suppressPackageStartupMessages(library(magrittr, quietly = TRUE))
+
+library(assertive)
+assert_is_numeric(counts)
+assert_all_are_non_negative(counts)
+assert_all_are_whole_numbers(counts)
+```
+
+
+Improve the `assertive()` with pipeline
+
+```{r}
+counts %>%
+  assert_is_numeric() %>%
+  assert_all_are_non_negative() %>%
+  assert_all_are_whole_numbers()
+
+counts %>% assert_any_are_na()
+```
+
+```{r}
+attributes(is_numeric(letters))
+
+is_non_negative(c(10, 1, 0, -1, -10, NA))
+is_numeric(c(10, 1, 0, -1, -10, NA))
+
+attributes(is_non_negative(c(10, 1, 0, -1, -10, NA)))
+assert_all_are_non_negative(c(10, 1, 0, -1, -10, NA))
+assert_any_are_non_negative(c(10, 1, 0, -1, -10, NA))
+```
+
+```{r}
+list <- ls("package:assertive", pattern = "finite")
+list
+apropos("finite")
+
+```
+
+This design helps distinguish be- tween interactive and programmatic use.
+
+- assertive.base, 
+- assertive.properties, 
+- assertive.types, 
+- assertive.numbers.
+
+```{r}
+library(assertive)
+
+x <- c(TRUE, FALSE, NA)
+assert_all_are_true(x)
+assert_any_are_true(x)
+assert_all_are_na(x)
+assert_any_are_na(x)
+
+identical(x, TRUE)
+is_identical_to_na(x)
+```
+
+
+```{r}
+(y <- c(a = TRUE))
+isTRUE(y)
+is_identical_to_true(y)
+is_identical_to_true(y, allow_attributes = TRUE)
+is_identical_to_na(matrix())
+## [1] FALSE
+## Cause of failure:  matrix() is not identical to NA; 
+## its value is structure(NA, dim = c(1L, 1L)). 
+is_identical_to_na(matrix(), allow_attributes = TRUE)
+```
+
+
+# assertive.properties
+
+```{r}
+x <- 1:5
+has_names(x)
+names(x) <- character(5)
+has_names(x)
+names(x) <- month.abb[1:5]
+has_names(x)
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
