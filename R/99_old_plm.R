@@ -184,8 +184,8 @@ pred_matching <- function(lb_data,
   }
 
 
-  subject <- lb_test %>%
-    dplyr::filter(id == sbj)
+  browser()
+  subject <- lb_test
 
   ind_time <- test_data %>%
     dplyr::filter(id == sbj)

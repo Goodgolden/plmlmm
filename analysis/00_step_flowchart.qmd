@@ -1,0 +1,81 @@
+---
+title: "00_steps"
+---
+
+
+```{r}
+library(tidyverse)
+library(DiagrammeR)
+library(rsvg)
+library(xml2)
+library(DiagrammeRsvg)
+```
+
+
+```{r}
+# install.packages("DiagrammeR")
+flowchart <- DiagrammeR::grViz(
+"digraph graph2 {
+
+graph [layout = dot]
+
+# node definitions with substituted label text
+node [shape = rectangle, width = 4, fillcolor = Biege]
+a [label = 
+  <
+    <b> </b> <br ALIGN = 'CENTER'/> 
+    <b>Imputing: </b> <br ALIGN = 'CENTER'/> 
+    &nbsp; &#8226; Brokenstick model <br ALIGN = 'LEFT'/>
+     &nbsp; &#8226; Brokenstick prediction at anchor time<br ALIGN = 'LEFT'/> 
+    &nbsp; &#8226; Linear model <br ALIGN = 'LEFT'/>
+     &nbsp; &#8226; Linear prediction at anchor time<br ALIGN = 'LEFT'/>
+    >
+  ]
+  
+b [label =
+ <
+   <b> </b> <br ALIGN = 'CENTER'/> 
+   <b>Matching: </b> <br ALIGN = 'CENTER'/> 
+   &nbsp; &#8226; Single-time matching <br ALIGN = 'LEFT'/>
+    &nbsp; &#8226; Multiple-time matching<br ALIGN = 'LEFT'/>
+    &nbsp; &#8226; Matching criterion<br ALIGN = 'LEFT'/> 
+  >
+ ]
+ 
+ 
+c [label =
+ <
+   <b> </b> <br ALIGN = 'CENTER'/> 
+   <b>Predicting: </b> <br ALIGN = 'CENTER'/> 
+   &nbsp; &#8226; Median for predictive trajectory <br ALIGN = 'LEFT'/>
+    &nbsp; &#8226; Centiles for predictive intervals <br ALIGN = 'LEFT'/>
+  >
+ ]
+
+# These are the main nodes at top of graph
+
+  a -> b
+  
+  b -> c
+}
+")
+
+flowchart
+
+Sys.Date()
+
+flowchart %>%
+  export_svg() %>%
+  read_xml() %>%
+  write_xml(paste0("figure/00_plmlmm_steps2", Sys.Date(), ".svg"))
+
+flowchart %>%
+  export_svg() %>% 
+  charToRaw() %>% 
+  rsvg_png(paste0("figure/00_plmlmm_steps2", Sys.Date(), ".png"))
+
+
+# export_graph(flowchart,
+# file_name = "final/flowchart_graph.png",
+# file_type = "png")
+```

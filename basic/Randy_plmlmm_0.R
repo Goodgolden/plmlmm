@@ -178,8 +178,12 @@ pred_matching <- function(lb_data,
   subject <- lb_test %>%
     dplyr::filter(id == sbj)
 
+  test_data = test
+  sbj = "103104"
   ind_time <- test_data %>%
     dplyr::filter(id == sbj)
+  View(ind_time)
+  View(test)
 
   ## the matching subset
   lb_sub <- lb_data %>%
@@ -703,19 +707,7 @@ train_sgl10_n10 <-   map(id_train,
                      sbj = .))
 
 # testing --------------------------------------------------------------------
-test_eld_n10 <- map(id_test,
-               ~pred_matching(
-                 lb_data = lb_train,
-                 lb_test = lb_test,
-                 test_data = test_data,
-                 train_data = train_data,
-                 match_methods = "euclidean",
-                 match_num = 10,
-                 gamlss_formula = "ht ~ cs(time, df = 3)",
-                 gamsigma_formula = "~ cs(time, df = 1)",
-                 match_plot = FALSE,
-                 predict_plot = FALSE,
-                 sbj = .))
+
 
 test_mhl_n10 <- map(id_test,
                     ~pred_matching(

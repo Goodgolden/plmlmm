@@ -35,7 +35,7 @@ norm2 <- function(v) {
 }
 
 ## Add other type of norms???
-# }}}---------------------------------------------------------------------------
+
 
 
 
@@ -62,7 +62,7 @@ soft_fun <- function(M, v) {
   return(soft)
 }
 
-# }}}---------------------------------------------------------------------------
+
 
 
 
@@ -78,7 +78,7 @@ soft_fun <- function(M, v) {
 not_all_na <- function(x) {
   any(!is.na(x))
 }
-# }}}---------------------------------------------------------------------------
+
 
 
 ## 0.4 not any na {{{-----------------------------------------------------------
@@ -93,108 +93,51 @@ not_all_na <- function(x) {
 not_any_na <- function(x) {
   all(!is.na(x))
 }
-# }}}---------------------------------------------------------------------------
+
 
 
 ## 0.5 not in {{{---------------------------------------------------------------
 `%!in%` <- Negate(`%in%`)
-# }}}---------------------------------------------------------------------------
 
 
+# Distance ---------------------------------------------------------------------
 
-## 0.6 mahalanobis p {{{--------------------------------------------------------
+## 0.6 euclidean_df ----------------------------------------------------------
+euclidean_df <- function(Dmatrix,
+                         center) {
+  matching <<- as.data.frame(Dmatrix - center) %>%
+    apply(2, norm, type = "2") %>%
+    as.data.frame() %>%
+    dplyr::select(diff = 1) %>%
+    rownames_to_column("id") %>%
+    arrange(diff)
 
-#' Title
-#'
-#' @param Dmatrix
-#' @param alpha
-#'
-#' @return
-#' @export
-#'
-#' @examples
-mahalanobis_p <- function(Dmatrix,
-                         alpha) {
+  return(matching)
+}
+
+
+## 0.7 mahalanobis_df --------------------------------------------------------
+mahalanobis_df <- function(Dmatrix,
+                           center) {
 
   def <- nrow(Dmatrix)
   df <- Dmatrix %>%
-    ## Mahalanobis distance using the chisq pvalues
     as.matrix() %>%
     t()
 
-  matching <<- mahalanobis(df, colMeans(df), cov(df)) %>%
-    # mahalanobis(colMeans(.), cov(.)) %>%
-    as.data.frame() %>%
-    mutate(pvalue = pchisq(., df = def, lower.tail = FALSE)) %>%
-    filter(pvalue >= alpha) %>%
-    dplyr::select(malahanobis = 1, pvalue = 2) %>%
+  x <- sweep(df, 2L, center)
+  invcov <- MASS::ginv(cov(df))
+
+  value <- rowSums(x %*% invcov * x)
+  pvalue <- pchisq(value, df = def, lower.tail = FALSE)
+  matching <<- data.frame(diff = value,
+                          pvalue = pvalue) %>%
+    arrange(desc(pvalue)) %>%
     rownames_to_column("id")
-  # arrange(diff) %>%
-
-  # slice(1:match_num) %>%
-  # inner_join(obs_data, by = "id")
 
   return(matching)
 }
-## }}}--------------------------------------------------------------------------
 
-
-## 0.7 mahalanobis_n {{{--------------------------------------------------------
-#' Title
-#'
-#' @param Dmatrix
-#' @param match_num
-#'
-#' @return
-#' @export
-#'
-#' @examples
-mahalanobis_n <- function(Dmatrix,
-                          match_num) {
-  matching <<- Dmatrix %>%
-    as.matrix() %>%
-    t() %>%
-    mahalanobis(colMeans(.), cov(.)) %>%
-    # mahalanobis(colMeans(.), cov(.)) %>%
-    ## Now it is a vector of Mahalanobis distance
-    as.data.frame() %>%
-    dplyr::select(diff = 1) %>%
-    rownames_to_column("id") %>%
-    arrange(diff) %>%
-
-    slice(1:match_num)
-    # inner_join(dataset, by = "id")
-
-  return(matching)
-}
-## }}}--------------------------------------------------------------------------
-
-
-## 0.8 euclidean_n {{{----------------------------------------------------------
-#' Title
-#'
-#' @param Dmatrix
-#' @param match_num
-#'
-#' @return
-#' @export
-#'
-#' @examples
-euclidean_n <- function(Dmatrix,
-                        match_num) {
-  matching <<- Dmatrix %>%
-    apply(2, norm, type = "2") %>%
-    ## using Frobenius norm
-    # apply(lb_sub, 2, norm, type = "f") %>%
-    as.data.frame() %>%
-    dplyr::select(diff = 1) %>%
-    rownames_to_column("id") %>%
-    arrange(diff) %>%
-    slice(1:match_num)
-
-  return(matching)
-}
-## }}}--------------------------------------------------------------------------
 
 
 ## 0.9 singletime_n {{{---------------------------------------------------------
@@ -202,27 +145,22 @@ euclidean_n <- function(Dmatrix,
 #'
 #' @param Dmatrix
 #' @param match_time
-#' @param match_num
 #'
 #' @return
 #' @export
 #'
 #' @examples
-singletime_n <- function(Dmatrix,
-                        match_time,
-                        match_num) {
+single_df <- function(Dmatrix,
+                        match_time) {
   matching <<- Dmatrix %>%
     filter(as.numeric(rownames(.)) == match_time) %>%
     t() %>%
-    ## using Frobenius norm
-    # apply(lb_sub, 2, norm, type = "f") %>%
     as.data.frame() %>%
     dplyr::select(diff = 1) %>%
     rownames_to_column("id") %>%
-    arrange(abs(diff)) %>%
-    slice(1:match_num)
+    arrange(abs(diff))
 
   return(matching)
 }
-## }}}--------------------------------------------------------------------------
+
 

@@ -8,3 +8,12 @@ data/
 .rda
 html/
 *_files
+results
+.gitignore
+paper/
+figure
+result/
+results/
+sysdata.rda
+.rda
+NAMESPACE
