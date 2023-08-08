@@ -101,6 +101,8 @@ use_package("rjags", type = "Depends")
 use_package("stringr")
 use_package("splines", type = "Depends")
 use_package("shiny", type = "Depends")
+
+devtools::install_github("Goodgolden/plmlmm")
 ```
 
 

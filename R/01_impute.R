@@ -21,17 +21,14 @@ impute_kernel <- function(kernel,
 #' @param id_var The id variable name must be included in the dataset
 #' @param bs_knots The internal knots for brokenstick model
 #' @param anchor_time The anchor time set for imputation,
-#' @param data A data frame in which to look for variables with
-#' which to fit the brokenstick model and predict.
-#' Ideally, this is a longitudinal data.frame object in long-format.
+#' @param data A data frame in which to look for variables with which to fit the brokenstick model and predict. Ideally, this is a longitudinal data.frame object in long-format.
 #' @param ... Not used, but required for future extension
 #'
 #' @return
-#' @seealso [impute_kernel(), impute_rw2()]
 ## need to add the example and see how things going
-impute_brokenstick <- function(outcome_var = "ht",
-                               time_var = "time",
-                               id_var = "id",
+impute_brokenstick <- function(outcome_var,
+                               time_var,
+                               id_var,
                                bs_knots,
                                anchor_time,
                                data,
