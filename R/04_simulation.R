@@ -171,12 +171,18 @@ gen_all_ranef <- function(fullset = margin_mean,
 #' @export
 #'
 #' @examples
-save_dataset <- function(dataset) {
+save_dataset <- function(dataset,
+                         sample_size,
+                         train_size) {
 
-  train_id <- unique(dataset$id) %>%
-    sample(913)
+  all_id <- unique(dataaset$id) %>%
+    sample(sample_size)
+
+  train_id <- all_id %>%
+    sample(train_size)
 
   dataset <- as.data.frame(dataset) %>%
+    filter(id %in% all_id) %>%
     mutate(group = case_when(id %in% train_id ~ "training",
                              id %!in% train_id ~ "testing"))
 

@@ -28,8 +28,8 @@ people_like_me <- function(train_data,
                            outcome_var = "ht",
                            time_var = "time",
                            id_var = "id",
-                           brokenstick_knots = c(5, 12, 15),
-                           anchor_time = c(2, 5, 10, 11, 12, 12.5, 13, 13.5),
+                           brokenstick_knots,
+                           anchor_time,
                            linear_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",
                            gamlss_formula = "ht ~ cs(time, df = 3)",
                            gamlss_sigma = "~ cs(time, df = 1)",
@@ -145,27 +145,27 @@ people_like_me <- function(train_data,
   return(results)
 }
 
-test_103104 <- test %>% filter(id == 156392)
-
-plm_individual <- people_like_me(train_data = train,
-                                 test_data = test_103104,
-                                 outcome_var = "ht",
-                                 time_var = "time",
-                                 id_var = "id",
-                                 brokenstick_knots = c(5, 12, 15),
-                                 anchor_time = c(2, 5, 10, 11, 12, 12.5, 13, 13.5),
-                                 linear_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",
-                                 match_methods = "mahalanobis",
-                                 match_alpha = 0.99,
-                                 match_number = NULL,
-                                 weight = FALSE,
-                                 match_plot = TRUE)
-
-
-View(plm_individual)
-View(plm_individual$gamlss_data)
-View(test)
-
-attributes(plm_individual)
+# test_103104 <- test %>% filter(id == 156392)
+#
+# plm_individual <- people_like_me(train_data = train,
+#                                  test_data = test_103104,
+#                                  outcome_var = "ht",
+#                                  time_var = "time",
+#                                  id_var = "id",
+#                                  brokenstick_knots = c(5, 12, 15),
+#                                  anchor_time = c(5, 10, 11, 12),
+#                                  linear_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",
+#                                  match_methods = "mahalanobis",
+#                                  match_alpha = 0.99,
+#                                  match_number = NULL,
+#                                  weight = FALSE,
+#                                  match_plot = TRUE)
+#
+#
+# View(plm_individual)
+# View(plm_individual$gamlss_data)
+# View(test)
+#
+# attributes(plm_individual)
 
 

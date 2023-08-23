@@ -166,8 +166,6 @@ linear_impute <-
     return(results)
     }
 
-
-
 # Testing ----------------------------------------------------------------------
 # result <- impute_brokenstick(outcome_var = "ht",
 #                              time_var = "time",
