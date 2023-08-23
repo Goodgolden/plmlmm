@@ -1,5 +1,7 @@
+# Discription ------------------------------------------------------------------
 .onAttach <- function(libname, pkgname) {
-  packageStartupMessage("\n Welcome to my package; this is a package developed for Randy Jin's MS thesis")
+  packageStartupMessage("\n Welcome to my package; this is a package
+                        developed for Randy Jin's MS thesis")
 }
 
 
@@ -20,9 +22,9 @@
   invisible()
 }
 
+# Miscellious ------------------------------------------------------------------
 
-
-## 0.1 norm L2 {{{------------------
+## 0.1 norm L2 {{{--------------------------------------------------------------
 #' Title L2 or other norms
 #'
 #' @param v
@@ -37,36 +39,7 @@ norm2 <- function(v) {
 ## Add other type of norms???
 
 
-
-
-## 0.2 soft {{{-----------------------------------------------------------------
-#' Title soft activation function
-#' @details this is the equation
-#'
-#' @param M
-#' @param v
-#'
-#' @return
-#' @export
-#'
-soft_fun <- function(M, v) {
-  soft <- M
-  ## number of cols
-  p <- dim(M)[2]
-  for (j in 1 : p) {
-    M.j <- M[, j]
-    temp.j <- abs(M.j) - v
-    temp.j[temp.j < 0] <- 0
-    soft[, j] <- sign(M.j) * temp.j
-  }
-  return(soft)
-}
-
-
-
-
-
-## 0.3 not all na {{{-----------------------------------------------------------
+## 0.2 not all na {{{-----------------------------------------------------------
 #' Title
 #'
 #' @param x
@@ -81,7 +54,7 @@ not_all_na <- function(x) {
 
 
 
-## 0.4 not any na {{{-----------------------------------------------------------
+## 0.3 not any na {{{-----------------------------------------------------------
 #' Title
 #'
 #' @param x
@@ -96,13 +69,22 @@ not_any_na <- function(x) {
 
 
 
-## 0.5 not in {{{---------------------------------------------------------------
+## 0.4 not in {{{---------------------------------------------------------------
 `%!in%` <- Negate(`%in%`)
 
 
 # Distance ---------------------------------------------------------------------
 
-## 0.6 euclidean_df ----------------------------------------------------------
+## 0.5 euclidean_df ----------------------------------------------------------
+#' Title
+#'
+#' @param Dmatrix
+#' @param center
+#'
+#' @return
+#' @export
+#'
+#' @examples
 euclidean_df <- function(Dmatrix,
                          center) {
   matching <<- as.data.frame(Dmatrix - center) %>%
@@ -116,7 +98,16 @@ euclidean_df <- function(Dmatrix,
 }
 
 
-## 0.7 mahalanobis_df --------------------------------------------------------
+## 0.6 mahalanobis_df --------------------------------------------------------
+#' Title
+#'
+#' @param Dmatrix
+#' @param center
+#'
+#' @return
+#' @export
+#'
+#' @examples
 mahalanobis_df <- function(Dmatrix,
                            center) {
 
@@ -140,7 +131,7 @@ mahalanobis_df <- function(Dmatrix,
 
 
 
-## 0.9 singletime_n {{{---------------------------------------------------------
+## 0.7 singletime_n {{{---------------------------------------------------------
 #' Title
 #'
 #' @param Dmatrix
