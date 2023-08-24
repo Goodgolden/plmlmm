@@ -160,7 +160,7 @@ people_like_us <- function(train_data,
                            linear_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",
                            gamlss_formula = "ht ~ cs(time, df = 3)",
                            gamlss_sigma = "~ cs(time, df = 1)",
-                           match_methods = "mahalanobis",
+                           match_methods = c("euclidean", "mahalanobis", "single"),
                            weight = FALSE,
                            match_alpha = NULL,
                            match_number = NULL,
@@ -172,6 +172,9 @@ people_like_us <- function(train_data,
   outcome_var <- ensym(outcome_var)
   time_var <- ensym(time_var)
   id_var <- ensym(id_var)
+
+  # id_train <- dplyr::select(train_data, !!id_var) %>% unique() %>% unlist()
+  id_test <- dplyr::select(test_data, !!id_var) %>% unique() %>% unlist()
 
   ## extract the test baseline information
   test_baseline <- test_data %>%
@@ -197,20 +200,23 @@ people_like_us <- function(train_data,
   lm_bks <- lm(as.formula(linear_formula),
                data = brokenstick)
   # Tue Jul 25 22:30:34 2023 ------------------------------
-  test_baseline[paste0("anchor_", anchor_time)] <- NA
+  # test_baseline[paste0("anchor_", anchor_time)] <- NA
 
   data_test1 <- test_baseline %>%
     # dplyr::select(-!!time_var) %>%
-    group_by(!!id_var) %>%
-    pivot_longer(cols = contains("anchor_"),
-                 names_to = "time0",
-                 names_prefix = "anchor_",
-                 values_to = "lm_bks_target") %>%
-    rename(baseline = !!outcome_var,
-           !!time_var := time0)
+    ## this is the unnest way of doing testing dataset
+    mutate(time = list(anchor_time)) %>%
+    unnest() %>%
+    ## original way of augment the testing dataset
+    # group_by(!!id_var) %>%
+    # pivot_longer(cols = contains("anchor_"),
+    #              names_to = "time0",
+    #              names_prefix = "anchor_",
+    #              values_to = "lm_bks_target") %>%
+    rename(baseline = !!outcome_var)
 
   lp_test <- data_test1 %>%
-    ungroup() %>%
+    # ungroup() %>%
     mutate(lm_bks_target = predict(lm_bks, newdata = data_test1)) %>%
     dplyr::select(!!id_var, !!time_var, contains("lm_bks_target")) %>%
     as.matrix() %>%
@@ -226,7 +232,6 @@ people_like_us <- function(train_data,
     rename(!!outcome_var := lm_bks_target)
 
   ## end of 01_impute.R file ------------------------
-
 
 
   ## this is the distance for just one individual

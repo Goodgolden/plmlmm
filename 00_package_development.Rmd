@@ -10,7 +10,6 @@ freshr::freshr()
 ## load packages
 library(here)
 library(tidyverse)
-library(tidyverse)
 library(testthat)
 library(usethis)
 library(devtools)
@@ -35,13 +34,13 @@ here::set_here()
 ```{r}
 packageVersion("devtools")
 ## to create a package
-create_package("~/Desktop/project/plmlmm")
+# create_package("~/Desktop/project/plmlmm")
 use_mit_license()
 
 ## look for R home directory
-R.home()
+# R.home()
 ## look for R code base
-system.file()
+# system.file()
 ## look at the files in the same directory
 here::here() %>%
   list.files()
@@ -71,29 +70,19 @@ use_package("brokenstick", type = "Depends")
 use_package("broom.mixed", type = "Depends")
 
 use_package("dplyr", type = "Depends")
-
 use_package("forcats", type = "Depends")
-
 use_package("gamlss", type = "Depends")
-
 use_package("here", type = "Depends")
-
 use_package("janitor", type = "Depends")
 use_package("JMbayes", type = "Depends")
-
 use_package("lme4", type = "Depends")
-
 use_package("matrixcalc", type = "Depends")
 use_package("MASS", type = "Depends")
-
 use_package("nlme", type = "Depends")
-
 use_package("tidyverse", type = "Depends")
 use_package("tidyr", type = "Depends")
 use_package("tibble", type = "Depends")
-
 use_package("purrr")
-
 use_package("readr")
 use_package("rjags", type = "Depends")
 
@@ -109,14 +98,17 @@ devtools::install_github("Goodgolden/plmlmm")
 
 ```{r}
 # use_r("00_utils")
-# use_r("01_plm")
-# use_r("02_lmm")
-# use_r("03_simulation")
-# use_r("04_test")
-# 
-# use_test("01_plm")
-# use_test("02_lmm")
-# use_test("03_simulation")
+# use_r("01_impute")
+# use_r("02_distance")
+# use_r("03_prediction")
+# use_r("04_people-like-me")
+# use_r("05_simulation")
+# use_r("06_lmmpred)
+use_r("07_summarization")
+
+use_test("01_impute")
+# use_test("02_distance")
+# use_test("05_simulation")
 ```
 
 
@@ -124,13 +116,13 @@ devtools::install_github("Goodgolden/plmlmm")
 
 ```{r}
 load_all()
-exists("plm",
+exists("people_like_me",
        # where = globalenv(), 
        inherits = FALSE)
 #> [1] FALSE
 
 # ?exists Environment Access
-env <- environment(plm)
+env <- environment(plmlmm)
 exists("plm", 
        where = env,
        # where = globalenv(), 
@@ -205,6 +197,6 @@ Here is a typical sequence of calls when using devtools for package development:
 
 ```{r}
 load_all()
-plmlmm:::run_shiny()
+# plmlmm:::run_shiny()
 ```
 

@@ -4,12 +4,15 @@
 \alias{impute_brokenstick}
 \title{Title Imputation with \code{brokenstick::brokenstick()} function}
 \usage{
-impute_brokenstick(outcome_var = "ht",
-time_var = "time, id_var = "id",
-bs_knots = c(5, 10, 15),
-anchor_time = c(4, 6, 10, 11, 12),
-data = train,
-...)
+impute_brokenstick(
+  outcome_var,
+  time_var,
+  id_var,
+  bs_knots,
+  anchor_time,
+  data,
+  ...
+)
 }
 \arguments{
 \item{outcome_var}{The outcome_var variable name must include in the dataset}
@@ -22,9 +25,7 @@ data = train,
 
 \item{anchor_time}{The anchor time set for imputation,}
 
-\item{data}{A data frame in which to look for variables with
-which to fit the brokenstick model and predict.
-Ideally, this is a longitudinal data.frame object in long-format.}
+\item{data}{A data frame in which to look for variables with which to fit the brokenstick model and predict. Ideally, this is a longitudinal data.frame object in long-format.}
 
 \item{...}{Not used, but required for future extension}
 }
@@ -33,7 +34,4 @@ The predictions from a broken stick model coincide with
 the group-conditional means of the random effects.
 This function takes the \code{data} with selected \code{outcome_var}, \code{time_var}, and \code{id_var}.
 The user can calculate prediction (imputation) at given anchor \code{time} set.
-}
-\seealso{
-\code{\link[=impute_kernel(), impute_rw2]{impute_kernel(), impute_rw2()}}
 }

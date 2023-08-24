@@ -58,8 +58,8 @@ library(plmlmm)
 #> 
 #>     collapse
 #> Loading required package: parallel
-#>  **********   GAMLSS Version 5.4-3  **********
-#> For more on GAMLSS look at https://www.gamlss.com/
+#>  **********   GAMLSS Version 5.1-7  **********
+#> For more on GAMLSS look at http://www.gamlss.com/
 #> Type gamlssNews() to see new features/changes/bug fixes.
 #> Loading required package: here
 #> here() starts at /Users/goodgolden5/Desktop/project/plmlmm
@@ -77,7 +77,7 @@ library(plmlmm)
 #> Loading required package: rstan
 #> Loading required package: StanHeaders
 #> Loading required package: ggplot2
-#> rstan (Version 2.21.5, GitRev: 2e1f913d3ca3)
+#> rstan (Version 2.21.8, GitRev: 2e1f913d3ca3)
 #> For execution on a local, multicore CPU with excess RAM we recommend calling
 #> options(mc.cores = parallel::detectCores()).
 #> To avoid recompilation of unchanged Stan programs, we recommend calling
@@ -98,6 +98,15 @@ library(plmlmm)
 #> 
 #>     lmList
 #> Loading required package: matrixcalc
+#> Loading required package: rjags
+#> Loading required package: coda
+#> 
+#> Attaching package: 'coda'
+#> The following object is masked from 'package:rstan':
+#> 
+#>     traceplot
+#> Linked to JAGS 4.3.2
+#> Loaded modules: basemod,bugs
 #> Loading required package: shiny
 #> Loading required package: tibble
 #> Loading required package: tidyr
@@ -110,9 +119,9 @@ library(plmlmm)
 #> 
 #>     extract
 #> Loading required package: tidyverse
-#> ── Attaching packages ─────────────────────────────────────── tidyverse 1.3.2 ──
-#> ✔ readr   2.1.2     ✔ stringr 1.4.0
-#> ✔ purrr   0.3.4     
+#> ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
+#> ✔ lubridate 1.9.2     ✔ readr     2.1.4
+#> ✔ purrr     1.0.1     ✔ stringr   1.5.0
 #> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 #> ✖ purrr::accumulate() masks foreach::accumulate()
 #> ✖ nlme::collapse()    masks dplyr::collapse()
@@ -124,34 +133,23 @@ library(plmlmm)
 #> ✖ MASS::select()      masks dplyr::select()
 #> ✖ tidyr::unpack()     masks Matrix::unpack()
 #> ✖ purrr::when()       masks foreach::when()
+#> ℹ Use the conflicted package (<http://conflicted.r-lib.org/>) to force all conflicts to become errors
 #> 
-#>  Welcome to my package; this is a package developed for Randy Jin's MS thesis
+#>  Welcome to my package; this is a package
+#>                         developed for Randy Jin's MS thesis
+#> 
+#> 
+#> Attaching package: 'plmlmm'
+#> 
+#> 
+#> The following object is masked from 'package:base':
+#> 
+#>     match
 ## basic example code
 ```
 
-What is special about using `README.Rmd` instead of just `README.md`?
-You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
 You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this. You could also
-use GitHub Actions to re-render `README.Rmd` every time you push. An
-example workflow can be found here:
-<https://github.com/r-lib/actions/tree/v1/examples>.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
+up-to-date. `devtools::build_readme()` is handy for this.
 
 In that case, don’t forget to commit and push the resulting figure
 files, so they display on GitHub and CRAN.

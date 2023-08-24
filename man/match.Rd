@@ -8,9 +8,9 @@ match(
   distance_df = ddd,
   train = train,
   test_one,
-  id_var = "id",
-  outcome_var = "ht",
-  time_var = "time",
+  id_var,
+  outcome_var,
+  time_var,
   match_alpha = NULL,
   match_number = NULL,
   match_plot = FALSE

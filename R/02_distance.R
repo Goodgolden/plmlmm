@@ -49,14 +49,15 @@ distance_df <- function(lb_train,
       cat("\n using mahalanobis distance\n")
   }
 
-  # if (match_methods == "single") {
-  #   if (is.null(match_time)) {
-  #     stop("provide matching time points for single-time PLM methods")
-  #   }
-  #   dist_df <<- single_df(Dmatrix = lb_sub2,
-  #                              match_time = match_time)
-  #   cat("\n using single critical time point matching \n")
-  # }
+  if (match_methods == "single") {
+    if (is.null(match_time)) {
+      stop("provide matching time points for single-time PLM methods")
+    }
+    dist_df <<- single_df(Dmatrix = lb_sub1,
+                          match_time = match_time,
+                          center = center)
+    cat("\n using single critical time point matching \n")
+  }
 
   return(distance = dist_df)
 }

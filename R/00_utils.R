@@ -142,12 +142,14 @@ mahalanobis_df <- function(Dmatrix,
 #'
 #' @examples
 single_df <- function(Dmatrix,
-                        match_time) {
-  matching <<- Dmatrix %>%
+                      match_time,
+                      center) {
+  matching <<- as.data.frame(Dmatrix) %>%
     filter(as.numeric(rownames(.)) == match_time) %>%
     t() %>%
     as.data.frame() %>%
     dplyr::select(diff = 1) %>%
+    mutate(diff = diff - as.numeric(center)) %>%
     rownames_to_column("id") %>%
     arrange(abs(diff))
 
@@ -155,3 +157,50 @@ single_df <- function(Dmatrix,
 }
 
 
+
+## 0.8 mahalanobis p ------------------
+mahalanobis_p <- function(Dmatrix,
+                          alpha) {
+  def <- nrow(Dmatrix)
+  df <- Dmatrix %>%
+    ## Mahalanobis distance using the chisq pvalues
+    as.matrix() %>%
+    t()
+  x <- sweep(df, 2L, 0)
+  invcov <- MASS::ginv(cov(df))
+  value <- rowSums(x %*% invcov * x)
+  pvalue <- pchisq(value, df = def, lower.tail = FALSE)
+  matching <<- data.frame(diff = value,
+                          pvalue = as.numeric(pvalue)) %>%
+    arrange(desc(pvalue)) %>%
+    rownames_to_column("id") %>%
+    as.data.frame() %>%
+    dplyr::filter(pvalue >= alpha)
+
+  # slice(1:match_num) %>%
+  # inner_join(obs_data, by = "id")
+  return(matching)
+}
+
+## 0.9 mahalanobis_n ---------------
+mahalanobis_n <- function(Dmatrix,
+                          match_num) {
+  def <- nrow(Dmatrix)
+  df <- Dmatrix %>%
+    as.matrix() %>%
+    t()
+  x <- sweep(df, 2L, 0)
+  invcov <- MASS::ginv(cov(df))
+  value <- rowSums(x %*% invcov * x)
+
+  matching <<- Dmatrix %>%
+    t() %>%
+    as.data.frame() %>%
+    mutate(value = value) %>%
+    arrange(value) %>%
+    dplyr::select(diff = 1) %>%
+    rownames_to_column("id") %>%
+    slice(1:match_num)
+
+  return(matching)
+}
