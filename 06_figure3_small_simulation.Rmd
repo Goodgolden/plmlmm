@@ -1,0 +1,223 @@
+---
+title: "06_figure3_small_simulation"
+author: "randy"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# install.packages("rlang", type = "source")
+
+
+library(here)
+library(tidyverse)
+library(testthat)
+library(usethis)
+library(devtools)
+library(furrr)
+library(tictoc)
+
+
+load("C:/Users/jinxin/Desktop/plmlmm/R/S01_plmlmm_marginal_model_random_spline_2023-03-07.Rdata")
+load("C:/Users/jinxin/Desktop/plmlmm/R/train_test.rda")
+load_all()
+
+detectCores()
+```
+
+```{r}
+plm_simulation <- function(seed,
+                           sample_size = 400,
+                           train_size = 380,
+                           knots = c(10, 12, 15),
+                           pred_time = c(3, 6, 9, 12)) {
+  set.seed(seed)
+  print(exists("margin_mean"))
+  simulation <- gen_all_ranef(seed = seed) %>% 
+    save_dataset(dataset = .,
+                 sample_size = sample_size,
+                 train_size = train_size)
+  
+  
+  train_data <- dplyr::filter(simulation, group == "training")
+  test_data <- dplyr::filter(simulation, group == "testing")
+  id_test <- unique(test_data$id)
+
+  test_baseline <-
+    test_data %>%
+    group_by(id) %>%
+    slice(1L)
+  
+  bks <- brokenstick::brokenstick(ht ~ time | id,
+                                  data = train_data,
+                                  knots = knots)
+  
+  dataset_baseline <- train_data %>%
+    group_by(id) %>%
+    slice(1L) %>%
+    dplyr::select(-time) %>%
+    dplyr::select(baseline = ht, everything())
+  
+  
+  bks_pred_knots <- predict(bks,
+                          x = pred_time,
+                          shape = "long",
+                          # group = train_data$id,
+                          include_data = FALSE) %>%
+  dplyr::select(id, time, `.pred`)
+  
+  train_pred <- bks_pred_knots %>%
+    select_if(not_all_na)
+  
+  train_new <- full_join(train_pred, dataset_baseline)
+  ## add one factor time_var variable
+  
+  test_new <- test_baseline %>%
+    mutate(time = list(pred_time)) %>%
+    unnest(cols = c(time)) %>%
+    rename(baseline = ht)
+  
+
+  lm_bks_train <- lm("`.pred` ~ as.factor(time) * sex + baseline",
+                     data = train_new)
+  predicted_train <- predict(lm_bks_train)
+  predicted_test<- predict(lm_bks_train, newdata = test_new)
+  
+  
+  lb_train <- train_new %>%
+    ungroup() %>%
+    mutate(lm_bks_target = predicted_train) %>%
+    dplyr::select(lm_bks_target) %>%
+    cbind(train_pred) %>%
+    as.data.frame() %>%
+    dplyr::select(contains(c("id", "time", "lm_bks_target"))) %>%
+    as.matrix() %>%
+    as.data.frame() %>%
+    mutate(lm_bks_target = as.numeric(lm_bks_target))
+  
+  
+  test_new[, "lm_bks_target"] = as.numeric(predicted_test)
+  lb_test <- test_new %>%
+    dplyr::select(contains(c("id", "time", "lm_bks")))
+  
+  test_mhl_p080 <- map(id_test,
+                     ~try(predict_matching(
+                       lb_data = lb_train,
+                       lb_test = lb_test,
+                       test_data = test_data,
+                       train_data = train_data,
+                       match_methods = "mahalanobis",
+                       match_alpha = 0.80,
+                       gamlss_formula = "ht ~ cs(time, df = 3)",
+                       gamsigma_formula = "~ cs(time, df = 1)",
+                       sbj = .)))
+  test_eld_n10 <- map(id_test,
+                    ~predict_matching(
+                      lb_data = lb_train,
+                      lb_test = lb_test,
+                      test_data = test_data,
+                      train_data = train_data,
+                      match_methods = "euclidean",
+                      match_num = 10,
+                      gamlss_formula = "ht ~ cs(time, df = 3)",
+                      gamsigma_formula = "~ cs(time, df = 1)",
+                      sbj = .))
+  test_mhl_n10 <- map(id_test,
+                      ~predict_matching(
+                        lb_data = lb_train,
+                        lb_test = lb_test,
+                        test_data = test_data,
+                        train_data = train_data,
+                        match_methods = "mahalanobis",
+                        match_num = 10,
+                        gamlss_formula = "ht ~ cs(time, df = 3)",
+                        gamsigma_formula = "~ cs(time, df = 1)",
+                        sbj = .))
+  test_sgl10_n10 <- map(id_test,
+                      ~predict_matching(
+                        lb_data = lb_train,
+                        lb_test = lb_test,
+                        test_data = test_data,
+                        train_data = train_data,
+                        match_methods = "single",
+                        match_num = 10,
+                        match_time = 12,
+                        match_alpha = NULL,
+                        gamlss_formula = "ht ~ cs(time, df = 3)",
+                        gamsigma_formula = "~ cs(time, df = 1)",
+                        sbj = .))
+
+  lmm_test <- lmm_pred(train_data, test_data, test_baseline)
+  
+  # save(test_eld_n10,
+  #      test_mhl_n10,
+  #      test_mhl_p080,
+  #      test_sgl10_n10,
+  #      lmm_test,
+  #      file = paste0("anchor_time_seed", seed, "_", Sys.time(), ".Rdata"))
+
+  return(list(test_sgl10_n10 = test_sgl10_n10,
+              test_eld_n10 =  test_eld_n10,
+              test_mhl_n10 =  test_mhl_n10,
+              test_mhl_p080 = test_mhl_p080,
+              lmm_test = lmm_test))
+}
+```
+
+
+
+```{r}
+tic()
+a <- plm_simulation(seed = 555,
+                    sample_size = 400,
+                    train_size = 360,
+                    knots = c(10, 12, 15),
+                    pred_time = c(3, 6, 9, 12))
+toc()
+```
+
+> toc()
+1201.88 sec elapsed
+
+```{r}
+library(doParallel)
+library(foreach)
+
+
+myCluster <- makeCluster(20) # type of cluster
+# registerDoSNOW(myCluster)
+registerDoParallel(myCluster)
+iterations <- 500
+# pb <- txtProgressBar(max = iterations, style = 3)
+# progress <- function(n) setTxtProgressBar(pb, n)
+# opts <- list(progress = progress)
+simulations <- foreach(i = 1:iterations,
+                       .verbose = T ,
+                       # .options.snow = opts,
+                       .export = ls(globalenv()),
+                       .packages = c("brokenstick", "tidyverse", "plmlmm")) %dopar% {
+                         .GlobalEnv$margin_mean <- margin_mean
+                         .GlobalEnv$vcov5 <- vcov5
+                         .GlobalEnv$tidy5 <- tidy5
+                         .GlobalEnv$save_dataset <- save_dataset
+                         # source("C:/Users/jinxin/Desktop/plmlmm/R/00_utils.R")
+                         # source("C:/Users/jinxin/Desktop/plmlmm/R/01_impute.R")
+                         # source("C:/Users/jinxin/Desktop/plmlmm/R/02_distance.R")
+                         # source("C:/Users/jinxin/Desktop/plmlmm/R/03_prediction.R") 
+                         # source("C:/Users/jinxin/Desktop/plmlmm/R/05_simulation.R") 
+                         # source("C:/Users/jinxin/Desktop/plmlmm/R/06_lmmpred.R") 
+                         res <- try(plm_simulation(seed = i,
+                                                   sample_size = 400,
+                                                   train_size = 360,
+                                                   knots = c(10, 12, 15),
+                                                   pred_time = c(3, 6, 9, 12)))
+                         return(list(seed = i, results = res))
+                       }
+stopCluster(myCluster)
+
+save(simulations, file = "results/plmlmm_simulation_40_in_400_n500_2023-08-24.Rdata")
+View(simulations)
+```
+

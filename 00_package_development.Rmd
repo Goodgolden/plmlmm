@@ -1,7 +1,7 @@
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk(echo = TRUE)
+# knitr::opts_chunk(echo = TRUE)
 
 ## clean the R environment
 rm(list = ls())
@@ -16,6 +16,7 @@ library(devtools)
 
 load_all()
 library(plmlmm)
+
 
 # ?testthat::test_file
 # ?devtools::test
@@ -176,7 +177,7 @@ usethis::use_data(test, test_baseline,
                   overwrite = TRUE)
 
 ## build up a readme file and push into github
-use_readme_rmd()
+# use_readme_rmd()
 build_readme()
 
 usethis::use_roxygen_md()

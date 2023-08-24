@@ -175,7 +175,7 @@ save_dataset <- function(dataset,
                          sample_size,
                          train_size) {
 
-  all_id <- unique(dataaset$id) %>%
+  all_id <- unique(dataset$id) %>%
     sample(sample_size)
 
   train_id <- all_id %>%

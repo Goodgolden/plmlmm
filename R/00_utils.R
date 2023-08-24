@@ -22,6 +22,40 @@
   invisible()
 }
 
+singletime_n <- function(Dmatrix,
+                         match_time,
+                         match_num) {
+  matching <<- Dmatrix %>%
+    filter(as.numeric(rownames(.)) == match_time) %>%
+    t() %>%
+    ## using Frobenius norm
+    # apply(lb_sub, 2, norm, type = "f") %>%
+    as.data.frame() %>%
+    dplyr::select(diff = 1) %>%
+    rownames_to_column("id") %>%
+    arrange(abs(diff)) %>%
+    slice(1:match_num)
+
+  return(matching)
+}
+
+## 0.8 euclidean_n -----------------
+euclidean_n <- function(Dmatrix,
+                        match_num) {
+  matching <<- Dmatrix %>%
+    apply(2, norm, type = "2") %>%
+    ## using Frobenius norm
+    # apply(lb_sub, 2, norm, type = "f") %>%
+    as.data.frame() %>%
+    dplyr::select(diff = 1) %>%
+    rownames_to_column("id") %>%
+    arrange(diff) %>%
+    slice(1:match_num)
+
+  return(matching)
+}
+
+
 # Miscellious ------------------------------------------------------------------
 
 ## 0.1 norm L2 {{{--------------------------------------------------------------
