@@ -2,13 +2,20 @@
 % Please edit documentation in R/00_utils.R
 \name{euclidean_df}
 \alias{euclidean_df}
-\title{Title}
+\title{Title: Calculate Euclidean distance for a matrix}
 \usage{
 euclidean_df(Dmatrix, center)
 }
 \arguments{
-\item{center}{}
+\item{Dmatrix}{A numeric data matrix}
+
+\item{center}{A numeric vector}
+}
+\value{
+The Euclidean distance list order
+from the smallest to the largest difference
 }
 \description{
-Title
+Calculates the Euclidean distance of a given data matrix,
+at an arbitrary center.
 }

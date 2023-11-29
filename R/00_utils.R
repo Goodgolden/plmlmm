@@ -110,12 +110,16 @@ not_any_na <- function(x) {
 # Distance ---------------------------------------------------------------------
 
 ## 0.5 euclidean_df ----------------------------------------------------------
-#' Title
+#' Title: Calculate Euclidean distance for a matrix
 #'
-#' @param Dmatrix
-#' @param center
+#' Calculates the Euclidean distance of a given data matrix,
+#' at an arbitrary center.
 #'
-#' @return
+#' @param Dmatrix A numeric data matrix
+#' @param center A numeric vector
+#'
+#' @return The Euclidean distance list order
+#'         from the smallest to the largest difference
 #' @export
 #'
 #' @examples

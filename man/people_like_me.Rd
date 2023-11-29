@@ -10,6 +10,8 @@ people_like_me(
   outcome_var = "ht",
   time_var = "time",
   id_var = "id",
+  tmin = 0,
+  tmax = 17,
   brokenstick_knots,
   anchor_time,
   linear_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",

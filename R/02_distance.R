@@ -35,7 +35,7 @@ distance_df <- function(lb_train,
     column_to_rownames(var = as.character({{ time_var }})) %>%
     mutate_all(as.numeric)
 
-  center = as.numeric(unlist(lb_test_ind[, 3]))
+  center = as.numeric(unlist(lb_test_ind[, outcome_var]))
 
   if (match_methods == "euclidean") {
     dist_df <<- euclidean_df(Dmatrix = lb_sub1,
@@ -98,7 +98,7 @@ match <- function(distance_df = ddd,
 
   if (is.null(match_alpha)) {
     data <- distance_df %>%
-      slice(1:match_num) %>%
+      slice(1:match_number) %>%
       inner_join(train, by = as.character({{ id_var }}))
   }
 
@@ -133,3 +133,84 @@ match <- function(distance_df = ddd,
               number = match_number))
 }
 
+dis_match <- function(lb_train,
+                      lb_test_ind,
+                      train = train,
+                      match_methods = c("euclidean", "mahalanobis", "single"),
+                      id_var,
+                      outcome_var,
+                      time_var,
+                      match_alpha = NULL,
+                      match_number = NULL,
+                      match_time = NULL,
+                      ...) {
+
+  outcome_var <- ensym(outcome_var)
+  time_var <- ensym(time_var)
+  id_var <- ensym(id_var)
+  ## the matching subset
+  lb_sub1 <- lb_train %>%
+    pivot_wider(names_from = {{ id_var }},
+                values_from = {{ outcome_var }}) %>%
+    column_to_rownames(var = as.character({{ time_var }})) %>%
+    mutate_all(as.numeric)
+  # browser()
+  center = as.numeric(unlist(lb_test_ind[, outcome_var]))
+
+  if (match_methods == "euclidean") {
+    dist_df <<- euclidean_df(Dmatrix = lb_sub1,
+                             center = center)
+    cat("\n using euclidean distance\n")
+  }
+
+  if (match_methods == "mahalanobis") {
+    dist_df <<- mahalanobis_df(Dmatrix = lb_sub1,
+                               center = center)
+    cat("\n using mahalanobis distance\n")
+  }
+
+  if (match_methods == "single") {
+    if (is.null(match_time)) {
+      stop("provide matching time points for single-time PLM methods")
+    }
+    dist_df <<- single_df(Dmatrix = lb_sub1,
+                          match_time = match_time,
+                          center = center)
+    cat("\n using single critical time point matching \n")
+  }
+
+  if (is.null(match_alpha)) {
+    data1 <- dist_df %>%
+      as.data.frame() %>%
+      slice(1:match_number) %>%
+      inner_join(train, by = as.character({{ id_var }}))
+  }
+
+  if (is.null(match_number)) {
+    data1 <- dist_df %>%
+      as.data.frame() %>%
+      filter(pvalue >= match_alpha) %>%
+      inner_join(train, by = as.character({{ id_var }}))
+  }
+  #
+  # if (match_plot == TRUE) {
+  #
+  #   matching_plot <- ggplot() +
+  #     geom_line(data = data, aes(x = {{ time_var }}, y = {{ outcome_var }},
+  #                                group = {{ id_var }}),
+  #               color = "grey",
+  #               linetype = "dashed") +
+  #     geom_line(data = test_one,
+  #               aes(x = {{time_var}}, y = {{outcome_var}}),
+  #               color = "darkblue",
+  #               linewidth = 1) +
+  #     theme_bw()
+  #
+  #   cat("\n plotting matching paired individual trajectories \n")
+  # } else {
+  #   matching_plot = NULL
+  # }
+
+
+  return(subset = data1)
+}

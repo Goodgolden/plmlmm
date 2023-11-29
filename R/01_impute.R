@@ -2,7 +2,7 @@
 
 
 ## 1.1.1 impute_brokenstick -----------------------------------------------------
-#' Title Imputation with `brokenstick::brokenstick()` function
+#' Title Imputation with `brokenstick::brokenstick()`
 #' @description
 #' The predictions from a broken stick model coincide with
 #' the group-conditional means of the random effects.
@@ -115,15 +115,14 @@ impute_rw2 <- function(...) {
 #'
 #' @examples
 #'
-linear_impute <-
-  function(lm_formula,
-           data_impute,
-           data_test,
-           id_var,
-           outcome_var,
-           time_var,
-           anchor_time,
-           ...) {
+linear_impute <- function(lm_formula,
+                          data_impute,
+                          data_test,
+                          id_var,
+                          outcome_var,
+                          time_var,
+                          anchor_time,
+                          ...) {
     outcome_var <- ensym(outcome_var)
     time_var <- ensym(time_var)
     id_var <- ensym(id_var)
@@ -167,23 +166,5 @@ linear_impute <-
     return(results)
     }
 
-# Testing ----------------------------------------------------------------------
-# result <- impute_brokenstick(outcome_var = "ht",
-#                              time_var = "time",
-#                              id_var = "id",
-#                              bs_knots = c(5, 10, 15),
-#                              anchor_time = c(4, 6, 10, 11, 12, 12.5, 13, 13.5, 14),
-#                              data = train)
-#
-# ## the linear for all of them
-# linear <- linear_impute(lm_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",
-#                          data_impute = result,
-#                          data_test = test_baseline,
-#                          id_var = "id",
-#                          outcome_var = "ht",
-#                          time = "time",
-#                          anchor_time = c(4, 6, 10, 11, 12, 12.5, 13, 13.5, 14))
-# View(result)
-# View(linear$training)
-# View(linear$testing)
+
 

@@ -29,6 +29,8 @@ people_like_me <- function(train_data,
                            outcome_var = "ht",
                            time_var = "time",
                            id_var = "id",
+                           tmin = 0,
+                           tmax = 17,
                            brokenstick_knots,
                            anchor_time,
                            linear_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",
@@ -126,6 +128,8 @@ people_like_me <- function(train_data,
                             time_var = !!time_var,
                             outcome_var = !!outcome_var,
                             weight = weight,
+                            tmin = tmin,
+                            tmax = tmax,
                             gamlss_formula = gamlss_formula,
                             gamsigma_formula = gamlss_sigma,
                             predict_plot = predict_plot)
@@ -155,6 +159,8 @@ people_like_us <- function(train_data,
                            outcome_var = "ht",
                            time_var = "time",
                            id_var = "id",
+                           tmin = 0,
+                           tmax = 17,
                            brokenstick_knots,
                            anchor_time,
                            linear_formula = "ht ~ as.factor(time) * sex + ethnic + genotype + baseline",
@@ -206,7 +212,7 @@ people_like_us <- function(train_data,
     # dplyr::select(-!!time_var) %>%
     ## this is the unnest way of doing testing dataset
     mutate(time = list(anchor_time)) %>%
-    unnest() %>%
+    unnest(cols = !!time_var) %>%
     ## original way of augment the testing dataset
     # group_by(!!id_var) %>%
     # pivot_longer(cols = contains("anchor_"),
@@ -216,8 +222,8 @@ people_like_us <- function(train_data,
     rename(baseline = !!outcome_var)
 
   lp_test <- data_test1 %>%
-    # ungroup() %>%
-    mutate(lm_bks_target = predict(lm_bks, newdata = data_test1)) %>%
+    ungroup() %>%
+    mutate(lm_bks_target = predict(lm_bks, newdata = .)) %>%
     dplyr::select(!!id_var, !!time_var, contains("lm_bks_target")) %>%
     as.matrix() %>%
     as.data.frame() %>%
@@ -232,49 +238,43 @@ people_like_us <- function(train_data,
     rename(!!outcome_var := lm_bks_target)
 
   ## end of 01_impute.R file ------------------------
+  subset <- lp_test %>%
+    group_by(!!id_var) %>%
+    group_map(~dis_match(lb_train = lp_train,
+                         lb_test_ind = .,
+                         train = train_data,
+                         match_methods = match_methods,
+                         id_var = !!id_var,
+                         outcome_var = !!outcome_var,
+                         time_var = !!time_var,
+                         match_alpha = match_alpha,
+                         match_number = match_number,
+                         match_time = match_time))
 
-
-  ## this is the distance for just one individual
-  distance <- distance_df(lb_train = lp_train,
-                          lb_test_ind = lp_test,
-                          match_methods = match_methods,
-                          id_var = !!id_var,
-                          outcome_var = !!outcome_var,
-                          time_var = !!time_var)
-
-  subset <- match(distance_df = distance,
-                  train = train_data,
-                  test_one = test_data,
-                  id_var = !!id_var,
-                  outcome_var = !!outcome_var,
-                  time_var = !!time_var,
-                  match_alpha = match_alpha,
-                  match_number = match_number,
-                  match_plot = match_plot)
 
   ## the dataset is ready ---------------------------
-  gamlss1 <- predict_gamlss(matching = subset$subset,
-                            test_one = test_data,
+  results <- test_data %>%
+    group_by(!!id_var) %>%
+    group_map(~as.data.frame(.)) %>%
+    map2(subset, ~predict_gamlss(matching = .y,
+                            test_one = .x,
                             id_var = !!id_var,
                             time_var = !!time_var,
                             outcome_var = !!outcome_var,
+                            tmin = tmin,
+                            tmax = tmax,
                             weight = weight,
                             gamlss_formula = gamlss_formula,
                             gamsigma_formula = gamlss_sigma,
-                            predict_plot = predict_plot)
+                            predict_plot = FALSE))
 
-  results <- list(plot = gamlss1$predictive_centiles,
-                  matches = subset$plot,
-                  predicted = gamlss1$centiles_predicted,
-                  observed = gamlss1$centiles_observed,
-                  gamlss_data = subset$subset)
 
-  attr(results, "distance") <- distance
+  attr(results, "subset") <- subset
   attr(results, "brokenstick_model") <- brokenstick$model_bks
-  attr(results, "brokenstick_impute") <- brokenstick$data_anchor
+  # attr(results, "brokenstick_impute") <- brokenstick$data_anchor
   # attr(results, "matching_plot") <-
   # attr(results, "baseline") <- brokenstick$data_baseline
   # attr(results, "linear_model") <- summary(linear$lm_bks)
-
+  #
   return(results)
 }

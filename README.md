@@ -4,6 +4,10 @@
 # plmlmm
 
 <!-- badges: start -->
+
+[![R-CMD-check](https://github.com/Goodgolden/plmlmm/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/Goodgolden/plmlmm/actions/workflows/R-CMD-check.yaml)
+[![Codecov test
+coverage](https://codecov.io/gh/plmlmm/branch/20221115/graph/badge.svg)](https://app.codecov.io/gh/plmlmm?branch=20221115)
 <!-- badges: end -->
 
 The goal of plmlmm is to …
@@ -25,10 +29,8 @@ This is a basic example which shows you how to solve a common problem:
 ``` r
 library(plmlmm)
 #> Loading required package: brokenstick
-#> Warning: package 'brokenstick' was built under R version 4.2.3
 #> Loading required package: broom.mixed
 #> Loading required package: dplyr
-#> Warning: package 'dplyr' was built under R version 4.2.3
 #> 
 #> Attaching package: 'dplyr'
 #> The following objects are masked from 'package:stats':
@@ -47,6 +49,12 @@ library(plmlmm)
 #> 
 #>     sleep
 #> Loading required package: gamlss.dist
+#> Loading required package: MASS
+#> 
+#> Attaching package: 'MASS'
+#> The following object is masked from 'package:dplyr':
+#> 
+#>     select
 #> Loading required package: nlme
 #> 
 #> Attaching package: 'nlme'
@@ -54,11 +62,11 @@ library(plmlmm)
 #> 
 #>     collapse
 #> Loading required package: parallel
-#>  **********   GAMLSS Version 5.4-12  **********
-#> For more on GAMLSS look at https://www.gamlss.com/
+#>  **********   GAMLSS Version 5.1-7  **********
+#> For more on GAMLSS look at http://www.gamlss.com/
 #> Type gamlssNews() to see new features/changes/bug fixes.
 #> Loading required package: here
-#> here() starts at C:/Users/jinxin/Desktop/plmlmm
+#> here() starts at /Users/goodgolden5/Desktop/project/plmlmm
 #> Loading required package: janitor
 #> 
 #> Attaching package: 'janitor'
@@ -72,22 +80,18 @@ library(plmlmm)
 #> Loading required package: iterators
 #> Loading required package: rstan
 #> Loading required package: StanHeaders
-#> Warning: package 'StanHeaders' was built under R version 4.2.3
 #> Loading required package: ggplot2
-#> Warning: package 'ggplot2' was built under R version 4.2.3
 #> rstan (Version 2.21.8, GitRev: 2e1f913d3ca3)
 #> For execution on a local, multicore CPU with excess RAM we recommend calling
 #> options(mc.cores = parallel::detectCores()).
 #> To avoid recompilation of unchanged Stan programs, we recommend calling
 #> rstan_options(auto_write = TRUE)
-#> Do not specify '-march=native' in 'LOCAL_CPPFLAGS' or a Makevars file
 #> 
 #> Attaching package: 'JMbayes'
 #> The following object is masked from 'package:gamlss.data':
 #> 
 #>     aids
 #> Loading required package: lme4
-#> Warning: package 'lme4' was built under R version 4.2.3
 #> Loading required package: Matrix
 #> 
 #> Attaching package: 'lme4'
@@ -97,27 +101,18 @@ library(plmlmm)
 #> The following object is masked from 'package:nlme':
 #> 
 #>     lmList
-#> Loading required package: MASS
-#> 
-#> Attaching package: 'MASS'
-#> The following object is masked from 'package:dplyr':
-#> 
-#>     select
 #> Loading required package: matrixcalc
 #> Loading required package: rjags
-#> Warning: package 'rjags' was built under R version 4.2.3
 #> Loading required package: coda
 #> 
 #> Attaching package: 'coda'
 #> The following object is masked from 'package:rstan':
 #> 
 #>     traceplot
-#> Linked to JAGS 4.3.1
+#> Linked to JAGS 4.3.2
 #> Loaded modules: basemod,bugs
 #> Loading required package: shiny
-#> Warning: package 'shiny' was built under R version 4.2.3
 #> Loading required package: tibble
-#> Warning: package 'tibble' was built under R version 4.2.3
 #> Loading required package: tidyr
 #> 
 #> Attaching package: 'tidyr'
@@ -128,11 +123,9 @@ library(plmlmm)
 #> 
 #>     extract
 #> Loading required package: tidyverse
-#> Warning: package 'tidyverse' was built under R version 4.2.3
-#> Warning: package 'purrr' was built under R version 4.2.3
 #> ── Attaching core tidyverse packages ──────────────────────── tidyverse 2.0.0 ──
 #> ✔ lubridate 1.9.2     ✔ readr     2.1.4
-#> ✔ purrr     1.0.2     ✔ stringr   1.5.0
+#> ✔ purrr     1.0.1     ✔ stringr   1.5.0
 #> ── Conflicts ────────────────────────────────────────── tidyverse_conflicts() ──
 #> ✖ purrr::accumulate() masks foreach::accumulate()
 #> ✖ nlme::collapse()    masks dplyr::collapse()
@@ -161,24 +154,6 @@ library(plmlmm)
 
 What is special about using `README.Rmd` instead of just `README.md`?
 You can include R chunks like so:
-
-``` r
-summary(cars)
-#>      speed           dist       
-#>  Min.   : 4.0   Min.   :  2.00  
-#>  1st Qu.:12.0   1st Qu.: 26.00  
-#>  Median :15.0   Median : 36.00  
-#>  Mean   :15.4   Mean   : 42.98  
-#>  3rd Qu.:19.0   3rd Qu.: 56.00  
-#>  Max.   :25.0   Max.   :120.00
-```
-
-You’ll still need to render `README.Rmd` regularly, to keep `README.md`
-up-to-date. `devtools::build_readme()` is handy for this.
-
-You can also embed plots, for example:
-
-<img src="man/figures/README-pressure-1.png" width="100%" />
 
 In that case, don’t forget to commit and push the resulting figure
 files, so they display on GitHub and CRAN.

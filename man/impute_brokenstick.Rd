@@ -2,7 +2,7 @@
 % Please edit documentation in R/01_impute.R
 \name{impute_brokenstick}
 \alias{impute_brokenstick}
-\title{Title Imputation with \code{brokenstick::brokenstick()} function}
+\title{Title Imputation with \code{brokenstick::brokenstick()}}
 \usage{
 impute_brokenstick(
   outcome_var,

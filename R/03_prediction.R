@@ -20,7 +20,9 @@ predict_gamlss <- function(matching,
                            id_var,
                            time_var,
                            outcome_var,
-                           gamlss_formula = "ht ~ cs(time, df = 3)",
+                           tmin = 0,
+                           tmax = 17,
+                           gamlss_formula = "ht ~ cs(time, df = 5)",
                            gamsigma_formula = "~ cs(time, df = 1)",
                            weight = FALSE,
                            predict_plot = FALSE) {
@@ -30,8 +32,14 @@ predict_gamlss <- function(matching,
   time_var <- ensym(time_var)
   id_var <- ensym(id_var)
 
-  matching2 <<- matching %>% dplyr::select(-diff, -pvalue)
-  # test_one[[as.character({{ time_var }})]]
+  # browser()
+  if (is.null(matching$pvalue)) {
+    matching2 <<- matching %>% dplyr::select(-diff)
+  } else {
+    matching2 <<- matching %>% dplyr::select(-diff, -pvalue)
+    # test_one[[as.character({{ time_var }})]]
+  }
+
 
   if (weight == FALSE) {
     w = NULL
@@ -69,7 +77,7 @@ predict_gamlss <- function(matching,
     centiles.pred(plm,
                   linetype = c("centiles"),
                   xname = "time",
-                  xvalues = c(0:17),
+                  xvalues = c(tmin:tmax),
                   cent = c(5, 10, 25, 50, 75, 90, 95),
                   plot = FALSE,
                   legend = T) %>%
@@ -158,121 +166,6 @@ plm_ind_plot <- function(quantile,
 
 ## 3.3 dis_match_pred ----------------------------------------------------------
 
-predict_matching <- function(lb_data,
-                              lb_test,
-                              train_data,
-                              test_data,
-                              match_methods = c("mahalanobis", "euclidean", "single"),
-                              match_num = NULL,
-                              match_alpha = NULL,
-                              match_time = NULL,
-                              gamlss_formula = "ht ~ cs(time, df = 3)",
-                              gamsigma_formula = "~ cs(time, df = 1)",
-                              sbj) {
-  if (is.null(match_num) & is.null(match_alpha)) {
-    stop("provide matching number or critical values for PLM methods")
-  }
-  if (!is.null(match_num) & !is.null(match_alpha)) {
-    stop("provide either matching number or critical values for PLM methods, not both")
-  }
-
-  subject <- lb_test %>%
-    mutate(id = as.character(id)) %>%
-    dplyr::filter(id == sbj)
-
-  ind_time <- test_data %>%
-    mutate(id = as.character(id)) %>%
-    dplyr::filter(id == sbj)
-
-  ## the matching subset
-  lb_sub <- lb_data %>%
-    mutate(id = as.character(id)) %>%
-    dplyr::transmute(id = as.character(id),
-                     ## more time points for matching
-                     ## adding the correlation
-                     time = time,
-                     diff = lm_bks_target - subject$lm_bks_target) %>%
-    ## must remove the self data in training dataset
-    dplyr::filter(id != sbj) %>%
-    pivot_wider(names_from = "id",
-                values_from = "diff") %>%
-    remove_rownames() %>%
-    column_to_rownames("time")
-
-  if (match_methods == "euclidean") {
-    matching <<- euclidean_n(Dmatrix = lb_sub,
-                             match_num = match_num) %>%
-      inner_join(train_data, by = "id")
-    cat("\n using euclidean distance \n")
-  }
-
-  if (match_methods == "mahalanobis") {
-    if (!is.null(match_num)) {
-
-      matching <<- mahalanobis_n(Dmatrix = lb_sub,
-                                 match_num = match_num) %>%
-        inner_join(train_data, by = "id")
-      cat("\n using mahalanobis distance with matching number \n")}
-
-    if (!is.null(match_alpha)) {
-      matching <<- mahalanobis_p(Dmatrix = lb_sub,
-                                 alpha = match_alpha) %>%
-        inner_join(train_data, by = "id")
-      cat("\n using mahalanobis distance with F test p value \n")}
-  }
-
-  if (match_methods == "single") {
-    matching <<- singletime_n(Dmatrix = lb_sub,
-                              match_time = match_time,
-                              match_num = match_num) %>%
-      inner_join(train_data, by = "id")
-
-    cat("\n using single critical time point matching \n")
-  }
-
-
-  ## fitting gamlss model for
-  plm <- gamlss::gamlss(as.formula(gamlss_formula),
-                        sigma.formula = as.formula(gamsigma_formula),
-                        # nu.formula = ~cs(time^0.1, df=1),
-                        # tau.formula = ~cs(time^0.5, df=1),
-                        method = RS(100),
-                        data = matching,
-                        family = NO)
-
-  centiles_obs <-  gamlss::centiles.pred(plm,
-                                         type = c("centiles"),
-                                         xname = "time",
-                                         xvalues = c(ind_time$time),
-                                         cen = c(5, 10, 25, 50, 75, 90, 95)) %>%
-    cbind(actual = ind_time$ht) %>%
-    as.data.frame() %>%
-    mutate(coverage50 = ifelse(actual >= `25` & actual <= `75`, 1, 0),
-           coverage80 = ifelse(actual >= `10` & actual <= `90`, 1, 0),
-           coverage90 = ifelse(actual >= `5` & actual <= `95`, 1, 0),
-           # mse = (actual - `50`)^2,
-           # biassq = bias^2,
-           # var = mse - bias^2,
-           bias = abs(actual - `50`))
-
-  # centiles_obs <-
-  #   centiles.pred(plm, linetype = "centiles",
-  #                 xname = "time",
-  #                 xvalues = c(ind_time$time),
-  #                 cen = c(5, 10, 25, 50, 75, 90, 95)) %>%
-  #   cbind(actual = ind_time$ht) %>%
-  #   as.data.frame() %>%
-  #   mutate(coverage50 = ifelse(actual >= `25` & actual <= `75`, 1, 0),
-  #          coverage80 = ifelse(actual >= `10` & actual <= `90`, 1, 0),
-  #          coverage90 = ifelse(actual >= `5` & actual <= `95`, 1, 0),
-  #          # mse = (actual - `50`)^2,
-  #          # biassq = bias^2,
-  #          # var = mse - bias^2,
-  #          bias = abs(actual - `50`))
-
-
-  return(list(centiles_observed = centiles_obs))
-}
 
 # all_people <- linear$testing %>%
 #   group_by("id") %>%

@@ -10,7 +10,9 @@ predict_gamlss(
   id_var,
   time_var,
   outcome_var,
-  gamlss_formula = "ht ~ cs(time, df = 3)",
+  tmin = 0,
+  tmax = 17,
+  gamlss_formula = "ht ~ cs(time, df = 5)",
   gamsigma_formula = "~ cs(time, df = 1)",
   weight = FALSE,
   predict_plot = FALSE

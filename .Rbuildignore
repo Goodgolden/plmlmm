@@ -1,3 +1,7 @@
 ^plmlmm\.Rproj$
 ^\.Rproj\.user$
 ^README\.Rmd$
+^LICENSE\.md$
+^data-raw$
+^\.github$
+^codecov\.yml$

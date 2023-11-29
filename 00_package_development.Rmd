@@ -60,8 +60,32 @@ use_git()
 usethis::use_git_remote("origin", 
                         url = NULL, 
                         overwrite = TRUE)
+
 ```
 
+
+## use data
+
+
+It’s a good idea to store the code that generates your individual internal data objects, as well as the use_data() call that writes all of them into R/sysdata.rda. This is workflow code that belongs below data-raw/, not below R/.
+usethis::use_data_raw() can be used to initiate the use of data-raw/ or to initiate a new .R script there.
+If your package is uncomfortably large, experiment with different values of compress in use_data(internal = TRUE).
+
+```{r}
+epic_train <- train 
+epic_test <- test
+usethis::use_data(epic_train)
+usethis::use_data(epic_test)
+usethis::use_data_raw("epic_train")
+usethis::use_data_raw("epic_test")
+
+usethis::use_data(test, 
+                  # margin_mean,
+                  train, 
+                  demog, epic,
+                  internal = TRUE,
+                  overwrite = TRUE)
+```
 
 
 ## use package
@@ -106,10 +130,18 @@ devtools::install_github("Goodgolden/plmlmm")
 # use_r("05_simulation")
 # use_r("06_lmmpred)
 use_r("07_summarization")
+use_r("00_data")
 
 use_test("01_impute")
 # use_test("02_distance")
 # use_test("05_simulation")
+```
+
+## test_check
+
+```{r}
+
+test_check("plmlmm")
 ```
 
 
@@ -169,12 +201,7 @@ test()
 
 
 ## add datasets to the package
-usethis::use_data(test, test_baseline,
-                  all, margin_mean,
-                  train, train_baseline,
-                  demog, epic,
-                  internal = TRUE,
-                  overwrite = TRUE)
+
 
 ## build up a readme file and push into github
 # use_readme_rmd()
