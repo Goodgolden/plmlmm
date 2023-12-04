@@ -143,6 +143,7 @@ dis_match <- function(lb_train,
                       match_alpha = NULL,
                       match_number = NULL,
                       match_time = NULL,
+                      match_plot,
                       ...) {
 
   outcome_var <- ensym(outcome_var)
@@ -192,25 +193,24 @@ dis_match <- function(lb_train,
       filter(pvalue >= match_alpha) %>%
       inner_join(train, by = as.character({{ id_var }}))
   }
-  #
-  # if (match_plot == TRUE) {
-  #
-  #   matching_plot <- ggplot() +
-  #     geom_line(data = data, aes(x = {{ time_var }}, y = {{ outcome_var }},
-  #                                group = {{ id_var }}),
-  #               color = "grey",
-  #               linetype = "dashed") +
-  #     geom_line(data = test_one,
-  #               aes(x = {{time_var}}, y = {{outcome_var}}),
-  #               color = "darkblue",
-  #               linewidth = 1) +
-  #     theme_bw()
-  #
-  #   cat("\n plotting matching paired individual trajectories \n")
-  # } else {
-  #   matching_plot = NULL
-  # }
 
+  if (match_plot == TRUE) {
 
-  return(subset = data1)
+    matching_plot <- ggplot() +
+      geom_line(data = data1, aes(x = {{ time_var }}, y = {{ outcome_var }},
+                                 group = {{ id_var }}),
+                color = "grey",
+                linetype = "dashed") +
+      geom_line(data = lb_test_ind,
+                aes(x = {{time_var}}, y = {{outcome_var}}),
+                color = "darkblue",
+                linewidth = 1) +
+      theme_bw()
+
+    cat("\n plotting matching paired individual trajectories \n")
+  } else {
+    matching_plot = NULL
+  }
+
+  return(list(subset = data1, plot = matching_plot))
 }

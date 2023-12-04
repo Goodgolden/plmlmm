@@ -21,7 +21,7 @@ people_like_me(
   weight = FALSE,
   match_alpha = NULL,
   match_number = NULL,
-  match_plot = FALSE,
+  match_plot = TRUE,
   predict_plot = TRUE,
   ...
 )

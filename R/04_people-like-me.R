@@ -40,7 +40,7 @@ people_like_me <- function(train_data,
                            weight = FALSE,
                            match_alpha = NULL,
                            match_number = NULL,
-                           match_plot = FALSE,
+                           match_plot = TRUE,
                            predict_plot = TRUE,
                            ...) {
 
@@ -49,6 +49,7 @@ people_like_me <- function(train_data,
   time_var <- ensym(time_var)
   id_var <- ensym(id_var)
 
+  # browser()
   ## extract the test baseline information
   test_baseline <- test_data %>%
     group_by(!!id_var) %>%
@@ -170,7 +171,7 @@ people_like_us <- function(train_data,
                            weight = FALSE,
                            match_alpha = NULL,
                            match_number = NULL,
-                           match_plot = FALSE,
+                           match_plot = TRUE,
                            predict_plot = TRUE,
                            ...) {
 
@@ -237,6 +238,7 @@ people_like_us <- function(train_data,
     as.data.frame() %>%
     rename(!!outcome_var := lm_bks_target)
 
+  # browser()
   ## end of 01_impute.R file ------------------------
   subset <- lp_test %>%
     group_by(!!id_var) %>%
@@ -249,14 +251,15 @@ people_like_us <- function(train_data,
                          time_var = !!time_var,
                          match_alpha = match_alpha,
                          match_number = match_number,
-                         match_time = match_time))
+                         match_time = match_time,
+                         match_plot = match_plot))
 
 
   ## the dataset is ready ---------------------------
   results <- test_data %>%
     group_by(!!id_var) %>%
     group_map(~as.data.frame(.)) %>%
-    map2(subset, ~predict_gamlss(matching = .y,
+    map2(subset, ~predict_gamlss(matching = .y$subset,
                             test_one = .x,
                             id_var = !!id_var,
                             time_var = !!time_var,
@@ -266,15 +269,14 @@ people_like_us <- function(train_data,
                             weight = weight,
                             gamlss_formula = gamlss_formula,
                             gamsigma_formula = gamlss_sigma,
-                            predict_plot = FALSE))
-
+                            predict_plot = predict_plot))
 
   attr(results, "subset") <- subset
-  attr(results, "brokenstick_model") <- brokenstick$model_bks
+  # attr(results, "matching_plot") <- subset$matching_plot
+  # attr(results, "brokenstick_model") <- brokenstick$model_bks
   # attr(results, "brokenstick_impute") <- brokenstick$data_anchor
-  # attr(results, "matching_plot") <-
   # attr(results, "baseline") <- brokenstick$data_baseline
-  # attr(results, "linear_model") <- summary(linear$lm_bks)
+  # attr(results, "linear_model") <- summary(lm_bks)
   #
   return(results)
 }
